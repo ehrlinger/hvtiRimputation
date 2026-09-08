@@ -11,14 +11,23 @@ First release. Single mean imputation, and the record that goes with it.
   `imputed_matrix()`. A count cannot answer *was this patient's value
   imputed?*, so the matrix is the primary artifact and `summary()` is a view of
   it rather than a replacement for it.
-* **`imputed_any()` and `complete_case_pass()`** are the two row-level columns
-  the attrition record consumes. `complete_case_pass()` is read from the
-  **input**, before anything is filled -- evaluated on the completed data every
-  row over `vars` would pass, which is the opposite of what the column means.
-  Their intersection, `imputed_any(x) & !complete_case_pass(x)`, counts the
-  rows in an analysis only because a covariate was filled in. That is the
-  number that catches a port which imputed the wrong variable list yet still
-  reached the right row count.
+* **`imputed_any()`, `complete_case_pass()` and `analysis_pass()`** are the
+  row-level columns the attrition record consumes. `complete_case_pass()` is
+  read from the **input**, before anything is filled -- evaluated on the
+  completed data every row over `vars` would pass, which is the opposite of
+  what the column means. `analysis_pass()` is the same question after
+  imputing.
+* **`kept_by_imputation()`** counts the rows in an analysis only because a
+  covariate was filled in -- the number that catches a port which imputed the
+  wrong variable list yet still reached the right row count.
+
+  ⚠️ **It is `analysis_pass & !complete_case_pass`, not
+  `imputed_any & !complete_case_pass`.** The latter overcounts: it is `TRUE`
+  for a row that had a value filled but is still incomplete because a column
+  outside `vars` is missing, and such a row never enters the analysis at all.
+  The two agree only when imputation completes every row, which is the case
+  the design was written against -- so the wrong formula gave the right answer
+  there and the error was invisible.
 * **`imputation_indicators()`** generates missingness indicators from the
   record, with a prefix the caller chooses. The SAS `ms_*` spelling is
   available (`prefix = "ms_"`) and is deliberately not the default: a
@@ -36,6 +45,23 @@ First release. Single mean imputation, and the record that goes with it.
 * **An all-missing variable is an error, not a pass-through.** There is no mean
   to impute from, and leaving the column as `NA` while reporting it as imputed
   would be a lie in the record.
+* **A non-finite mean is an error.** `mean(c(Inf, -Inf), na.rm = TRUE)` is
+  `NaN`; filling with it leaves the cell missing while the record marks it
+  imputed. An infinite mean is refused in the other direction, as not a
+  plausible measurement. The completed column is then asserted to hold no
+  missing values, so the invariant is proved rather than assumed.
+* **A classed numeric is an error**, even though it passes `is.numeric()`.
+  `bit64::integer64` packs a 64-bit integer into a double's bits, so taking
+  its mean into an ordinary double reinterprets the bit pattern -- a column of
+  1 and 3 completes as 0, with the provenance recording `9.88e-324` rather
+  than 2. Wrong data and wrong provenance, no error. The guard keys on the
+  class attribute rather than a list of known classes, so it also catches
+  whatever the next one is called. Convert with `as.numeric()` yourself, so
+  the conversion is a choice you made.
+* **Duplicated column names in `data` are an error.** `data[["age"]]` returns
+  the first `age`, so naming it fills one column, leaves the other missing,
+  and emits a single record column that cannot say which. An audit cannot read
+  that.
 * **A non-numeric variable is an error.** A mean of a factor or a character
   column is not defined, and guessing one would be a method choice made
   silently.

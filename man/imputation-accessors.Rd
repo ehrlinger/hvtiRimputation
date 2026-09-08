@@ -6,6 +6,8 @@
 \alias{imputed_matrix}
 \alias{imputed_any}
 \alias{complete_case_pass}
+\alias{analysis_pass}
+\alias{kept_by_imputation}
 \alias{imputation_provenance}
 \title{Read an imputation record}
 \usage{
@@ -17,6 +19,10 @@ imputed_any(x)
 
 complete_case_pass(x)
 
+analysis_pass(x)
+
+kept_by_imputation(x)
+
 imputation_provenance(x)
 }
 \arguments{
@@ -24,8 +30,9 @@ imputation_provenance(x)
 }
 \value{
 \code{imputed_data()} a data frame; \code{imputed_matrix()} a logical matrix;
-\code{imputed_any()} and \code{complete_case_pass()} logical vectors, one element
-per row; \code{imputation_indicators()} a data frame of logical columns;
+\code{imputed_any()}, \code{complete_case_pass()}, \code{analysis_pass()} and
+\code{kept_by_imputation()} logical vectors, one element per row;
+\code{imputation_indicators()} a data frame of logical columns;
 \code{imputation_provenance()} a list.
 }
 \description{
@@ -37,9 +44,18 @@ attrition record consumes. They enter a CONSORT tracker as an \strong{annotation
 -- a stage that records something about the rows without removing any -- and
 not as an exclusion. Rows kept only because a covariate was filled in are
 not excluded, and they are not fully observed either, and a record with no
-vocabulary for that third state will misreport one or the other. The
-counterfactual is \code{imputed_any(x) & !complete_case_pass(x)}: the rows in the
-analysis \emph{only} because something was filled.
+vocabulary for that third state will misreport one or the other.
+
+\strong{Use \code{\link[=kept_by_imputation]{kept_by_imputation()}} for the counterfactual, not
+\code{imputed_any(x) & !complete_case_pass(x)}.} That expression overcounts. It
+is \code{TRUE} for a row that had a value filled but is \emph{still} incomplete
+because a column outside \code{vars} is missing -- a row that never enters the
+analysis at all, and so was not kept by anything.
+
+The two agree only when imputation completes every row, which is why the
+error is easy to miss: in the study the design was written against, the
+analysis set was every row, so post-imputation completeness was uniformly
+\code{TRUE} and the wrong formula gave the right answer.
 }
 \examples{
 dat <- data.frame(age = c(50, 60, NA, 70), bmi = c(NA, 25, 27, 29))
@@ -47,8 +63,9 @@ out <- impute_mean(dat, vars = c("age", "bmi"))
 
 imputed_any(out)
 complete_case_pass(out)
+analysis_pass(out)
 
 # Rows in the analysis only because a covariate was filled:
-sum(imputed_any(out) & !complete_case_pass(out))
+sum(kept_by_imputation(out))
 
 }

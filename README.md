@@ -25,6 +25,7 @@
 | Piece | State |
 |---|---|
 | `impute_mean()` — single mean imputation (`PROC STANDARD REPLACE`, `imputsub`) | ✅ implemented |
+| Refusal to impute a classed numeric (`integer64`, `Date`), a non-finite mean, or a frame with duplicated column names | ✅ implemented |
 | The record: per-cell matrix, generated indicators, provenance | ✅ implemented |
 | `imputed_any()` / `complete_case_pass()` — the row-level attrition columns | ✅ implemented |
 | `impute_multiple()` — multiple imputation (`PROC MI`, `mult_imput`) | ⛔ designed, not built |
@@ -73,15 +74,23 @@ The two row-level columns the attrition record wants:
 
 ```r
 imputed_any(out)         # did this row have anything filled?
-complete_case_pass(out)  # would this row have survived listwise deletion?
+complete_case_pass(out)  # would it have survived listwise deletion? (before)
+analysis_pass(out)       # is it complete after imputing?
 
 # Rows in the analysis ONLY because a covariate was filled in:
-sum(imputed_any(out) & !complete_case_pass(out))
+sum(kept_by_imputation(out))
 ```
 
 That last number is the one worth checking a port against. A port that
 mean-imputes the **wrong variable list** still reaches the right row count and
 still looks correct — it does not reach the right count here.
+
+⚠️ **Use `kept_by_imputation()`, not `imputed_any() & !complete_case_pass()`.**
+The expression overcounts: it is `TRUE` for a row that had a value filled but
+is *still* incomplete because a column outside `vars` is missing — a row that
+never enters the analysis, and so was kept by nothing. The two agree only when
+imputation completes every row, which is exactly the case the design was
+written against.
 
 Missingness indicators, for carrying "this was missing" into a model:
 
@@ -105,7 +114,9 @@ imputation_indicators(out, prefix = "ms_")  # ms_age, ms_bmi, as SAS named them
 | `imputed_data()` | The completed data frame |
 | `imputed_matrix()` | Logical matrix, one row per row and one column per imputed variable, `TRUE` where filled |
 | `imputed_any()` | Row-level: did this row have any value filled? |
-| `complete_case_pass()` | Row-level: would this row have survived listwise deletion? |
+| `complete_case_pass()` | Row-level: would this row have survived listwise deletion, *before* imputing? |
+| `analysis_pass()` | Row-level: is this row complete *after* imputing? |
+| `kept_by_imputation()` | Row-level: in the analysis only because something was filled — `analysis_pass & !complete_case_pass` |
 | `imputation_indicators()` | Missingness indicator columns, generated from the record, with the prefix you choose |
 | `imputation_provenance()` | Method, `m`, fill values, package version, seed |
 | `summary()` | Per-variable counts and fill values — a view of the record, never a replacement for it |
@@ -160,8 +171,8 @@ Rows kept only because a covariate was filled in are not excluded, and they are
 not fully observed either. A record with no vocabulary for that third state
 will misreport one or the other.
 
-So `imputed_any()` and `complete_case_pass()` are meant to enter a CONSORT
-tracker as an **annotation stage** — one that records something about the rows
+So `imputed_any()`, `complete_case_pass()` and `analysis_pass()` are meant to
+enter a CONSORT tracker as an **annotation stage** — one that records something about the rows
 without removing any. The two columns are the stable half of that contract and
 are available now; the stage constructor itself is
 [hvtiPlotR#131](https://github.com/ehrlinger/hvtiPlotR/issues/131) and nothing

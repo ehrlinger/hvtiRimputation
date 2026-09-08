@@ -62,7 +62,7 @@ impute_mean <- function(data, vars, cc_vars = names(data)) {
 
   # Read BEFORE anything is filled. Evaluated on the completed data every row
   # over `vars` would pass, which is the opposite of what the column means.
-  cc_pass <- stats::complete.cases(data[, cc_vars, drop = FALSE])
+  cc_pre <- stats::complete.cases(data[, cc_vars, drop = FALSE])
 
   record <- matrix(
     FALSE,
@@ -81,15 +81,37 @@ impute_mean <- function(data, vars, cc_vars = names(data)) {
         call. = FALSE
       )
     }
-    fill[[v]] <- mean(data[[v]], na.rm = TRUE)
-    data[[v]][missing] <- fill[[v]]
+    value <- mean(data[[v]], na.rm = TRUE)
+    validate_fill(value, v)
+    fill[[v]] <- value
+    data[[v]][missing] <- value
     record[, v] <- missing
+
+    # The record claims these cells were filled. Prove it, rather than
+    # trusting that assignment did what the fill value promised: a fill that
+    # is NA or NaN writes a missing value into a cell the record marks TRUE,
+    # which is precisely the lie the record exists to make impossible.
+    if (anyNA(data[[v]])) {
+      stop(
+        "`", v, "` still has missing values after imputation, so the record ",
+        "would claim a fill that did not happen. This is a bug in ",
+        "hvtiRimputation; please report it.",
+        call. = FALSE
+      )
+    }
   }
+
+  # Post-imputation completeness. Distinct from `cc_pre`, and not derivable
+  # from it: a row can have a value filled and STILL be incomplete because a
+  # column outside `vars` is missing. Such a row never enters the analysis, so
+  # it was not kept by imputation.
+  cc_post <- stats::complete.cases(data[, cc_vars, drop = FALSE])
 
   new_hvti_imputation(
     data = data,
     matrix = record,
-    complete_case_pass = cc_pass,
+    complete_case_pass = cc_pre,
+    analysis_pass = cc_post,
     provenance = list(
       method = "mean",
       m = 1L,

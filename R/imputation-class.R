@@ -24,6 +24,9 @@
 #'   \item{`matrix`}{the logical record, via [imputed_matrix()]}
 #'   \item{`complete_case_pass`}{row-level: would this row have survived
 #'     listwise deletion? Read from the input, before anything was filled}
+#'   \item{`analysis_pass`}{row-level: is this row complete *after* imputing?
+#'     Not derivable from the two above -- a row can have a value filled and
+#'     still be incomplete because a column outside `vars` is missing}
 #'   \item{`provenance`}{method, `m`, the package version that produced it,
 #'     and the seed where the method is stochastic, via
 #'     [imputation_provenance()]}
@@ -38,12 +41,14 @@
 #' @name hvti_imputation
 NULL
 
-new_hvti_imputation <- function(data, matrix, complete_case_pass, provenance) {
+new_hvti_imputation <- function(data, matrix, complete_case_pass, analysis_pass,
+                                provenance) {
   structure(
     list(
       data = data,
       matrix = matrix,
       complete_case_pass = complete_case_pass,
+      analysis_pass = analysis_pass,
       provenance = provenance
     ),
     class = "hvti_imputation"
@@ -59,15 +64,25 @@ new_hvti_imputation <- function(data, matrix, complete_case_pass, provenance) {
 #' -- a stage that records something about the rows without removing any -- and
 #' not as an exclusion. Rows kept only because a covariate was filled in are
 #' not excluded, and they are not fully observed either, and a record with no
-#' vocabulary for that third state will misreport one or the other. The
-#' counterfactual is `imputed_any(x) & !complete_case_pass(x)`: the rows in the
-#' analysis *only* because something was filled.
+#' vocabulary for that third state will misreport one or the other.
+#'
+#' **Use [kept_by_imputation()] for the counterfactual, not
+#' `imputed_any(x) & !complete_case_pass(x)`.** That expression overcounts. It
+#' is `TRUE` for a row that had a value filled but is *still* incomplete
+#' because a column outside `vars` is missing -- a row that never enters the
+#' analysis at all, and so was not kept by anything.
+#'
+#' The two agree only when imputation completes every row, which is why the
+#' error is easy to miss: in the study the design was written against, the
+#' analysis set was every row, so post-imputation completeness was uniformly
+#' `TRUE` and the wrong formula gave the right answer.
 #'
 #' @param x An object of class [hvti_imputation].
 #'
 #' @return `imputed_data()` a data frame; `imputed_matrix()` a logical matrix;
-#'   `imputed_any()` and `complete_case_pass()` logical vectors, one element
-#'   per row; `imputation_indicators()` a data frame of logical columns;
+#'   `imputed_any()`, `complete_case_pass()`, `analysis_pass()` and
+#'   `kept_by_imputation()` logical vectors, one element per row;
+#'   `imputation_indicators()` a data frame of logical columns;
 #'   `imputation_provenance()` a list.
 #'
 #' @examples
@@ -76,9 +91,10 @@ new_hvti_imputation <- function(data, matrix, complete_case_pass, provenance) {
 #'
 #' imputed_any(out)
 #' complete_case_pass(out)
+#' analysis_pass(out)
 #'
 #' # Rows in the analysis only because a covariate was filled:
-#' sum(imputed_any(out) & !complete_case_pass(out))
+#' sum(kept_by_imputation(out))
 #'
 #' @name imputation-accessors
 NULL
@@ -109,6 +125,23 @@ imputed_any <- function(x) {
 complete_case_pass <- function(x) {
   stopifnot(inherits(x, "hvti_imputation"))
   unname(x$complete_case_pass)
+}
+
+#' @rdname imputation-accessors
+#' @export
+analysis_pass <- function(x) {
+  stopifnot(inherits(x, "hvti_imputation"))
+  unname(x$analysis_pass)
+}
+
+#' @rdname imputation-accessors
+#' @export
+kept_by_imputation <- function(x) {
+  stopifnot(inherits(x, "hvti_imputation"))
+  # post AND NOT pre. A row that is still incomplete after imputing is not in
+  # the analysis, so it was not kept by imputation -- which is why this is not
+  # `imputed_any(x) & !complete_case_pass(x)`.
+  analysis_pass(x) & !complete_case_pass(x)
 }
 
 #' @rdname imputation-accessors

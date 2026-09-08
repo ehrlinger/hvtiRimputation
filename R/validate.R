@@ -15,7 +15,45 @@ validate_data <- function(data) {
     stop("`data` has no rows, so there is nothing to impute from.",
          call. = FALSE)
   }
+
+  # A duplicated column name makes the record ambiguous, and silently so.
+  # `data[["age"]]` returns the FIRST `age`, so naming it in `vars` fills one
+  # column, leaves the other missing, and emits a single record column called
+  # `age` that does not say which. An audit cannot read that, which is the one
+  # thing this package's output has to survive.
+  dup <- unique(names(data)[duplicated(names(data))])
+  if (length(dup) > 0L) {
+    stop("`data` has more than one column named ", collapse_names(dup),
+         ". A duplicated name makes the imputation record ambiguous -- it ",
+         "cannot say which column a filled value came from. Rename the ",
+         "columns before imputing.",
+         call. = FALSE)
+  }
   data
+}
+
+# The fill value has to be a real number before it is written anywhere.
+#
+# The failure this exists for: `mean(c(Inf, -Inf), na.rm = TRUE)` is `NaN`.
+# Assigning it leaves the cell missing while the record marks it filled --
+# the record telling an auditor a value was imputed when it was not. An
+# infinite mean is rejected for the same reason in the other direction: it is
+# not a plausible imputed measurement, and writing it would poison every
+# downstream model silently rather than loudly.
+validate_fill <- function(value, var) {
+  if (length(value) != 1L || !is.finite(value)) {
+    what <- if (is.nan(value)) "NaN" else if (is.na(value)) "NA" else
+      paste0("`", format(value), "`")
+    stop(
+      "the mean of `", var, "` is ", what, ", which cannot be used as a fill ",
+      "value. This usually means the column holds non-finite values (`Inf`, ",
+      "`-Inf`, `NaN`), whose mean is not a number. Filling with it would ",
+      "leave the cell missing while the record claimed it was imputed. Clean ",
+      "the column, or supply the fill value yourself.",
+      call. = FALSE
+    )
+  }
+  invisible(value)
 }
 
 validate_vars <- function(data, vars, arg, numeric_only = TRUE) {
@@ -47,6 +85,28 @@ validate_vars <- function(data, vars, arg, numeric_only = TRUE) {
            plural(not_numeric, "is", "are"), " not numeric. ",
            "A mean of a factor or a character column is not defined, and ",
            "guessing one here would be a method choice made silently.",
+           call. = FALSE)
+    }
+
+    # `is.numeric()` is necessary and not sufficient. A classed numeric --
+    # `bit64::integer64`, `Date`, `POSIXct`, `units` -- passes it while
+    # carrying storage or interpretation rules this function does not know.
+    # `integer64` is the sharp case: it packs a 64-bit integer INTO a double's
+    # bits, so taking its mean into an ordinary double reinterprets the bit
+    # pattern. Observed: a column of 1 and 3 completed as 0, with the
+    # provenance recording 9.88e-324 rather than 2. Wrong data and wrong
+    # provenance, no error.
+    classed <- vars[vapply(data[vars], function(x) !is.null(oldClass(x)),
+                           logical(1))]
+    if (length(classed) > 0L) {
+      cls <- vapply(data[classed], function(x) oldClass(x)[1], character(1))
+      stop("mean imputation needs plain numeric variables, and ",
+           paste0("`", classed, "` is <", cls, ">", collapse = ", "),
+           ". A classed numeric passes `is.numeric()` while carrying storage ",
+           "rules this function does not know, and imputing it silently ",
+           "corrupts both the data and the provenance. Convert it yourself ",
+           "-- `as.numeric()` for integer64 -- so the conversion is a choice ",
+           "you made rather than one made for you.",
            call. = FALSE)
     }
   }

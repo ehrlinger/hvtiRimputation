@@ -97,6 +97,30 @@ Evaluated on the completed data, every row over `vars` passes by construction
 and the column silently reports the wrong answer with no error. It has a
 regression test named for this; do not remove it.
 
+**R5a. The counterfactual is `analysis_pass & !complete_case_pass`, and
+`kept_by_imputation()` is the only supported way to compute it.** Not
+`imputed_any & !complete_case_pass`, which the package spec's §8 and this
+package's own first draft both used. That expression overcounts: it is `TRUE`
+for a row that had a value filled but is still incomplete on a column outside
+`vars`, and such a row never enters the analysis. ⭐ **The two agree only when
+imputation completes every row**, which is the study the design was written
+against -- so the wrong formula gave the right answer there, and no test built
+from that study could have caught it. Do not reintroduce the expression into
+documentation as a convenience.
+
+**R6a. The record must never claim a fill that did not happen.** This is the
+invariant the package exists to provide, and three separate inputs broke it in
+review: a column whose mean is not finite (`mean(c(Inf, -Inf))` is `NaN`, and
+assigning it leaves the cell missing while the record says filled); a classed
+numeric such as `bit64::integer64` (reinterpreted bit pattern, wrong data
+*and* wrong provenance, no error); and a data frame with duplicated column
+names (one column filled, the other left missing, one record column unable to
+say which). All three are refused, and `impute_mean()` asserts the completed
+column holds no missing values afterwards rather than trusting that the fill
+worked. ⚠️ **Refusing an input is cheaper than a wrong record**, because
+nothing downstream can detect the latter. Guards key on the class attribute
+and on structure, never on a list of known class names.
+
 **R6. Fail loud on anything ambiguous.** An all-missing variable, a
 non-numeric variable, an unknown or duplicated name, a zero-row frame: all
 errors. There is no path through this package that imputes fewer variables than

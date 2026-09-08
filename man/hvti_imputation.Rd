@@ -31,6 +31,9 @@ is what \code{\link[=summary.hvti_imputation]{summary.hvti_imputation()}} is for
 \item{\code{matrix}}{the logical record, via \code{\link[=imputed_matrix]{imputed_matrix()}}}
 \item{\code{complete_case_pass}}{row-level: would this row have survived
 listwise deletion? Read from the input, before anything was filled}
+\item{\code{analysis_pass}}{row-level: is this row complete \emph{after} imputing?
+Not derivable from the two above -- a row can have a value filled and
+still be incomplete because a column outside \code{vars} is missing}
 \item{\code{provenance}}{method, \code{m}, the package version that produced it,
 and the seed where the method is stochastic, via
 \code{\link[=imputation_provenance]{imputation_provenance()}}}

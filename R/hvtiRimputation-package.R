@@ -42,4 +42,11 @@
 #' **The record is the point.** Everything returns a logical matrix parallel
 #' to the data saying which values were filled, because a count cannot answer
 #' *was this patient's value imputed?*. See [hvti_imputation].
+#'
+#' **The record must never claim a fill that did not happen**, which is why
+#' this package refuses inputs a more relaxed one would accept: a column whose
+#' mean is not finite, a classed numeric whose storage rules it does not know,
+#' and a data frame with duplicated column names. Each of those produces a
+#' record that reads as authoritative and is wrong, and a wrong record is
+#' worse than a refusal because nothing downstream can detect it.
 "_PACKAGE"
