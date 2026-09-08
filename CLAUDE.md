@@ -13,9 +13,11 @@ it lives in the Obsidian vault under `Claude/repomaps/` and is read via the `rea
 skill (`/codemap hvtiRimputation`). If the codemap looks stale, say so and offer to refresh it
 (`/regenerate-codemap`) rather than working from a guess.
 
-⚠️ **There is no codemap for this repo yet** — it was created on 2026-09-08 and the indexer
-has not seen it. Offer to generate one (`/regenerate-codemap`) rather than reporting the
-absence as staleness.
+✅ **The codemap exists** — `Claude/repomaps/hvtiRimputation.md` in the vault, first written
+2026-09-08. It arrived without being asked for: `code_index.py` walks `~/Documents/GitHub`
+and reads the house-style registry, so a repo becomes mapped by existing on disk and being
+registered, not by anyone running the indexer. The launchd agent refreshes every 15 minutes;
+`/regenerate-codemap` forces it.
 
 If the vault is not available, say so rather than staying quiet about it, then orient from the
 repo itself. Start with the `@details` block in `R/hvtiRimputation-package.R` and the
