@@ -14,10 +14,11 @@ skill (`/codemap hvtiRimputation`). If the codemap looks stale, say so and offer
 (`/regenerate-codemap`) rather than working from a guess.
 
 ✅ **The codemap exists** — `Claude/repomaps/hvtiRimputation.md` in the vault, first written
-2026-09-08. It arrived without being asked for: `code_index.py` walks `~/Documents/GitHub`
-and reads the house-style registry, so a repo becomes mapped by existing on disk and being
-registered, not by anyone running the indexer. The launchd agent refreshes every 15 minutes;
-`/regenerate-codemap` forces it.
+2026-09-08, without a manual indexer run. `code_index.py` builds it, and the launchd agent
+(`com.john.code-index`) runs that every 900 seconds; the map appeared because the script walks
+`~/Documents/GitHub` and reads the house-style registry, so a repo becomes mapped by existing
+on disk and being registered rather than by anyone invoking the indexer for it.
+`/regenerate-codemap` forces a run when you do not want to wait.
 
 If the vault is not available, say so rather than staying quiet about it, then orient from the
 repo itself. Start with the `@details` block in `R/hvtiRimputation-package.R` and the
