@@ -14,7 +14,8 @@ skill (`/codemap hvtiRimputation`). If the codemap looks stale, say so and offer
 (`/regenerate-codemap`) rather than working from a guess.
 
 ⚠️ **There is no codemap for this repo yet** — it was created on 2026-09-08 and the indexer
-has not seen it. Offer to generate one rather than reporting the absence as staleness.
+has not seen it. Offer to generate one (`/regenerate-codemap`) rather than reporting the
+absence as staleness.
 
 If the vault is not available, say so rather than staying quiet about it, then orient from the
 repo itself. Start with the `@details` block in `R/hvtiRimputation-package.R` and the

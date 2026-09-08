@@ -135,12 +135,15 @@ the first draft of that design silently resurrected excluded patients.
 
 ## Git and versioning
 
-⚠️ **This repo has no GitHub remote yet, and no ruleset.** Everything below
-describes the family standard, which this repo joins when it is pushed. Until
-then the rules are conventions here, not enforcement -- and the `main` is
-protected / required checks paragraphs describe a state that does not yet
-exist. Delete this note once the remote and the `protect main` ruleset are in
-place, and verify the ruleset from the API rather than trusting the text below.
+✅ **The `protect main` ruleset is live here as of 2026-09-08**, created by
+copying `hvtiRbootstrap`'s live definition from the API rather than retyping
+it, and verified back from
+`GET /repos/ehrlinger/hvtiRimputation/rulesets/22556413`: five rules, eight
+required checks pinned to `integration_id` 15368, zero required approvals, and
+the `RepositoryRole` 5 bypass at mode `always`. Everything below therefore
+applies in full. Re-read it from the API rather than from this paragraph -- the
+entry in the sibling repos was wrong for two weeks precisely because it was
+written from memory.
 
 - **Never push to `main`.** Branch, then open a PR and let the maintainer merge.
 - **`main` is protected by a GitHub ruleset, and nothing in this repo records that.** A clone
