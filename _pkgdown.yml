@@ -1,0 +1,60 @@
+url: https://ehrlinger.github.io/hvtiRimputation/
+
+# NOT the default `docs/`. That directory holds this project's plans and specs,
+# and pkgdown's check_dest_is_pkgdown() refuses to build over a directory it
+# did not create -- correctly, since building there would deploy the plans as
+# the package site and, with clean: true, delete them.
+destination: pkgdown-site
+template:
+  bootstrap: 5
+  bslib:
+    bootswatch: zephyr
+    base_font: {google: "Outfit"}
+    code_font: {google: "Fira Code"}
+  light-switch: true
+  theme: atom-one-light
+  theme-dark: atom-one-dark
+
+home:
+  sidebar:
+    structure: [badges, links, authors]
+    components:
+      badges:
+        title: Package badges
+        text: |
+          ![GitHub R package version](https://img.shields.io/github/r-package/v/ehrlinger/hvtiRimputation)<br>
+          ![pkgdown build status](https://img.shields.io/github/actions/workflow/status/ehrlinger/hvtiRimputation/pkgdown.yaml)<br>
+
+navbar:
+  structure:
+    left: [reference, news]
+    right: [search, github, my_linkedin, lightswitch]
+  components:
+    my_linkedin:
+      icon: fa-linkedin
+      href: https://www.linkedin.com/in/ehrlinger/
+      aria-label: LinkedIn
+
+reference:
+- title: "1. Impute"
+  desc: >
+    One function per method, never one function with a `method=` argument.
+    Single mean imputation is the SAS `imputsub` / `PROC STANDARD REPLACE`
+    job; multiple imputation is designed and not yet built.
+  contents:
+  - impute_mean
+
+- title: "2. Read the record"
+  desc: >
+    Every imputation returns the completed data and a record of exactly what
+    was changed. The matrix is the primary artifact; everything else here is
+    a view of it.
+  contents:
+  - hvti_imputation
+  - imputation-accessors
+  - imputation_indicators
+  - summary.hvti_imputation
+
+- title: "Package"
+  contents:
+  - hvtiRimputation-package
