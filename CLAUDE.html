@@ -47,7 +47,7 @@
 <div class="section level2">
 <h2 id="before-you-touch-code">Before you touch code<a class="anchor" aria-label="anchor" href="#before-you-touch-code"></a></h2>
 <p><code>AGENTS.md</code> says to orient before editing. In Claude Code the way to do that is the codemap: it lives in the Obsidian vault under <code>Claude/repomaps/</code> and is read via the <code>read-codemap</code> skill (<code>/codemap hvtiRimputation</code>). If the codemap looks stale, say so and offer to refresh it (<code>/regenerate-codemap</code>) rather than working from a guess.</p>
-<p>⚠️ <strong>There is no codemap for this repo yet</strong> — it was created on 2026-09-08 and the indexer has not seen it. Offer to generate one (<code>/regenerate-codemap</code>) rather than reporting the absence as staleness.</p>
+<p>✅ <strong>The codemap exists</strong> — <code>Claude/repomaps/hvtiRimputation.md</code> in the vault, first written 2026-09-08, without a manual indexer run. <code>code_index.py</code> builds it, and the launchd agent (<code>com.john.code-index</code>) runs that every 900 seconds; the map appeared because the script walks <code>~/Documents/GitHub</code> and reads the house-style registry, so a repo becomes mapped by existing on disk and being registered rather than by anyone invoking the indexer for it. <code>/regenerate-codemap</code> forces a run when you do not want to wait.</p>
 <p>If the vault is not available, say so rather than staying quiet about it, then orient from the repo itself. Start with the <code>@details</code> block in <code>R/hvtiRimputation-package.R</code> and the validation-file comment at the top of <code>R/validate.R</code> — between them they explain more of this package’s design than any other file.</p>
 </div>
 <div class="section level2">
