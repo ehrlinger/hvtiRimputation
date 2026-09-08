@@ -1,0 +1,22 @@
+# Authors and Citation
+
+## Authors
+
+- **John Ehrlinger**. Author, maintainer.
+
+## Citation
+
+Source:
+[`DESCRIPTION`](https://github.com/ehrlinger/hvtiRimputation/blob/main/DESCRIPTION)
+
+Ehrlinger J (2026). *hvtiRimputation: Missing Value Imputation for the
+HVTI CORR Group*. R package version 0.1.0,
+<https://github.com/ehrlinger/hvtiRimputation>.
+
+    @Manual{,
+      title = {hvtiRimputation: Missing Value Imputation for the HVTI CORR Group},
+      author = {John Ehrlinger},
+      year = {2026},
+      note = {R package version 0.1.0},
+      url = {https://github.com/ehrlinger/hvtiRimputation},
+    }
