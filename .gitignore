@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+*.tar.gz
+*.Rcheck
+pkgdown-site/
+.remember/
+
+# Incoming handoff notes stay local; this repo is public.
+dev/*handoff*
+dev/**/*handoff*

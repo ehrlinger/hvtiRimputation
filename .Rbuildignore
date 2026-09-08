@@ -1,0 +1,15 @@
+^.*\.Rproj$
+^LICENSE\.md$
+^README\.md$
+^\.Rproj\.user$
+^\.claude$
+^\.github$
+^\.superpowers$
+^\.remember$
+^_pkgdown\.yml$
+^docs$
+^dev$
+^AGENTS\.md$
+^CLAUDE\.md$
+^pkgdown-site$
+^tools$
