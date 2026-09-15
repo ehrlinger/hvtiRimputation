@@ -31,11 +31,10 @@ exactly which values were changed.
 \details{
 This is the R form of \verb{PROC STANDARD ... REPLACE} with no \verb{MEAN=}/\verb{STD=},
 which is what the \code{imputsub} macro wraps. It is \strong{single} imputation: one
-completed dataset, and no between-imputation variance. If you want multiple
-imputation, call \code{impute_multiple()} -- there is deliberately no one
-function that picks between them, because a function that quietly does one
-when the caller expected the other is a worse failure than no function at
-all.
+completed dataset, and no between-imputation variance. Multiple imputation
+is not yet implemented; see the README. It will be a separate function,
+because a function that quietly does one method when the caller expected the
+other is a worse failure than no function at all.
 }
 \section{Divergences from SAS}{
 
