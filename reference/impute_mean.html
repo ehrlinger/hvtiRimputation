@@ -86,11 +86,10 @@ what was filled, and <code><a href="imputation-accessors.html">imputation_proven
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>This is the R form of <code>PROC STANDARD ... REPLACE</code> with no <code>MEAN=</code>/<code>STD=</code>,
 which is what the <code>imputsub</code> macro wraps. It is <strong>single</strong> imputation: one
-completed dataset, and no between-imputation variance. If you want multiple
-imputation, call <code>impute_multiple()</code> – there is deliberately no one
-function that picks between them, because a function that quietly does one
-when the caller expected the other is a worse failure than no function at
-all.</p>
+completed dataset, and no between-imputation variance. Multiple imputation
+is not yet implemented; see the README. It will be a separate function,
+because a function that quietly does one method when the caller expected the
+other is a worse failure than no function at all.</p>
     </div>
     <div class="section level2">
     <h2 id="divergences-from-sas">Divergences from SAS<a class="anchor" aria-label="anchor" href="#divergences-from-sas"></a></h2>
