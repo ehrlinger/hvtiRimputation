@@ -6,11 +6,10 @@
 #'
 #' This is the R form of `PROC STANDARD ... REPLACE` with no `MEAN=`/`STD=`,
 #' which is what the `imputsub` macro wraps. It is **single** imputation: one
-#' completed dataset, and no between-imputation variance. If you want multiple
-#' imputation, call `impute_multiple()` -- there is deliberately no one
-#' function that picks between them, because a function that quietly does one
-#' when the caller expected the other is a worse failure than no function at
-#' all.
+#' completed dataset, and no between-imputation variance. Multiple imputation
+#' is not yet implemented; see the README. It will be a separate function,
+#' because a function that quietly does one method when the caller expected the
+#' other is a worse failure than no function at all.
 #'
 #' @param data A data frame.
 #' @param vars Character vector of columns to impute. **Required, with no

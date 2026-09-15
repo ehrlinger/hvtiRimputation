@@ -2,6 +2,12 @@
 
 First release. Single mean imputation, and the record that goes with it.
 
+* The `impute_mean()` help page no longer tells readers to call the designed
+  but unimplemented `impute_multiple()` function.
+* Coverage uploads without a Codecov token are now best-effort, so a successful
+  package test run is not marked failed solely because tokenless upload is
+  unavailable.
+
 * **`impute_mean()`** ports `PROC STANDARD ... REPLACE` -- the form with no
   `MEAN=`/`STD=`, which the `imputsub` macro wraps. Missing values are filled
   with the variable's mean over its non-missing values; observed values are
