@@ -1,5 +1,27 @@
 # Changelog
 
+## hvtiRimputation 0.1.1
+
+### New features
+
+- **[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  prototype.** Multiple imputation by chained equations (`mice`),
+  returning `m` completed datasets stacked long plus the same shape of
+  record
+  [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
+  returns. Method defaults to `mice`’s own per-column dispatch
+  (`pmm`/`logreg`/`polyreg`/`polr`) rather than one string forced across
+  every column; a named-vector `method` argument overrides specific
+  columns. A new class, `hvti_imputation_multi`, keeps
+  [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)’s
+  own contract untouched.
+  [`imputed_data()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
+  is now a real S3 generic; its `hvti_imputation_multi` method requires
+  an `imputation` argument with no default, on purpose – see
+  `dev/specs/2026-09-23-impute-multiple-design.md` for why. Pooling
+  (Rubin’s rules) remains out of scope, per the design note and the
+  README.
+
 ## hvtiRimputation 0.1.0
 
 First release. Single mean imputation, and the record that goes with it.

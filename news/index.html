@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,14 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRimputation/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.1" id="hvtirimputation-011">hvtiRimputation 0.1.1<a class="anchor" aria-label="anchor" href="#hvtirimputation-011"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-1-1">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-1"></a></h3>
+<ul><li>
+<strong><code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> prototype.</strong> Multiple imputation by chained equations (<code>mice</code>), returning <code>m</code> completed datasets stacked long plus the same shape of record <code><a href="../reference/impute_mean.html">impute_mean()</a></code> returns. Method defaults to <code>mice</code>’s own per-column dispatch (<code>pmm</code>/<code>logreg</code>/<code>polyreg</code>/<code>polr</code>) rather than one string forced across every column; a named-vector <code>method</code> argument overrides specific columns. A new class, <code>hvti_imputation_multi</code>, keeps <code><a href="../reference/impute_mean.html">impute_mean()</a></code>’s own contract untouched. <code><a href="../reference/imputation-accessors.html">imputed_data()</a></code> is now a real S3 generic; its <code>hvti_imputation_multi</code> method requires an <code>imputation</code> argument with no default, on purpose – see <code>dev/specs/2026-09-23-impute-multiple-design.md</code> for why. Pooling (Rubin’s rules) remains out of scope, per the design note and the README.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="hvtirimputation-010">hvtiRimputation 0.1.0<a class="anchor" aria-label="anchor" href="#hvtirimputation-010"></a></h2>
 <p>First release. Single mean imputation, and the record that goes with it.</p>
