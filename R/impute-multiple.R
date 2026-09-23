@@ -55,6 +55,14 @@
 #' inherited here, for the reason recorded in `impute_mean()`'s own
 #' Divergences section.
 #'
+#' **`vars` needs at least two columns.** `mice::mice()` fits chained
+#' equations, so a single column has no other column to condition on --
+#' passing one fails inside `mice` with no context. This function checks
+#' for it and refuses with an explanation instead.
+#'
+#' **`data` cannot use `.imp` or `.id` as column names.** Both are reserved
+#' for the long-format draw index and row identifier this function adds.
+#'
 #' **No pooling.** This function returns `m` valid completed datasets and
 #' their record. Combining them into a single inferential answer -- fitting
 #' a model to each draw and pooling by Rubin's rules -- is the caller's job.
@@ -88,7 +96,37 @@
 impute_multiple <- function(data, vars, m, cc_vars = names(data),
                             method = NULL, maxit = 5L, seed = NA_integer_) {
   data <- validate_data(data)
+
+  # .imp and .id are the long-format draw index and row identifier this
+  # function adds itself. A `data` column already using either name would
+  # collide with them in data_long -- two columns of the same name, the
+  # first of which silently wins every $.imp/$.id read -- the same ambiguity
+  # validate_data() already refuses for a duplicated column name generally.
+  reserved <- intersect(c(".imp", ".id"), names(data))
+  if (length(reserved) > 0L) {
+    stop(
+      "`data` has a column named ", collapse_names(reserved), ", which ",
+      plural(reserved, "is", "are"),
+      " reserved by impute_multiple() for the long-format draw index and ",
+      "row identifier. Rename the column in `data` before calling this ",
+      "function.",
+      call. = FALSE
+    )
+  }
+
   vars <- validate_impute_vars(data, vars, arg = "vars")
+  if (length(vars) < 2L) {
+    stop(
+      "`vars` must name at least two columns. mice::mice() requires at ",
+      "least two columns to fit chained equations -- each imputed ",
+      "variable needs another column to condition on -- and fails with an ",
+      "opaque error (\"Data should contain at least two columns\") on a ",
+      "single one. Name a second column, even a fully observed one with ",
+      "nothing to impute, or use impute_mean() if a single numeric ",
+      "variable is all you need filled.",
+      call. = FALSE
+    )
+  }
   cc_vars <- validate_vars(data, cc_vars, arg = "cc_vars", numeric_only = FALSE)
   m <- validate_m(m)
 
@@ -108,6 +146,13 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
 
   method_vec <- mice::make.method(imp_input)
   if (!is.null(method)) {
+    if (!is.character(method) || anyNA(method)) {
+      stop(
+        "`method` must be a named character vector (or NULL), not ",
+        class(method)[1], ".",
+        call. = FALSE
+      )
+    }
     if (is.null(names(method)) || anyNA(names(method)) ||
           any(names(method) == "")) {
       stop(
@@ -117,6 +162,11 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
         "mice::make.method().",
         call. = FALSE
       )
+    }
+    dup <- unique(names(method)[duplicated(names(method))])
+    if (length(dup) > 0L) {
+      stop("`method` names ", collapse_names(dup), " more than once.",
+           call. = FALSE)
     }
     unknown <- setdiff(names(method), vars)
     if (length(unknown) > 0L) {
@@ -135,11 +185,30 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
 
   # mice loses the `logical` class for a column it imputes with its own
   # default `logreg` method (though not when `pmm` is forced on the same
-  # column instead), returning plain 0/1 numeric. Restore it explicitly and
-  # assert it below, rather than assume mice's completion preserved a class
-  # it is only sometimes faithful to.
+  # column instead), returning plain 0/1 numeric. Restore it explicitly,
+  # rather than assume mice's completion preserved a class it is only
+  # sometimes faithful to -- but only after checking the values really are
+  # 0/1. A `method` override incompatible with a 2-level column (`"norm"`,
+  # say) makes mice return an arbitrary continuous draw, and as.logical()
+  # maps every nonzero value to TRUE regardless of what it actually was --
+  # silently turning a bad method choice into a record that claims success.
   for (v in vars[is_logical_col]) {
-    completed[[v]] <- as.logical(completed[[v]])
+    raw <- completed[[v]]
+    if (!is.logical(raw)) {
+      bad <- !is.na(raw) & !(raw %in% c(0, 1))
+      if (any(bad)) {
+        stop(
+          "`", v, "` is a logical column, but the method used for it (`",
+          method_vec[[v]], "`) returned ", format(raw[bad][1]), ", which ",
+          "is not 0 or 1. Coercing that to logical would silently map ",
+          "every nonzero draw to TRUE. Choose a method for `", v, "` that ",
+          "respects a 2-level column (mice's own default, or \"pmm\"), not ",
+          "one meant for a continuous variable.",
+          call. = FALSE
+        )
+      }
+      completed[[v]] <- as.logical(raw)
+    }
   }
 
   still_missing <- vars[
@@ -158,13 +227,16 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   # format uses (draw 1 rows 1:n, draw 2 rows 1:n, ...), then overwrite just
   # the imputed columns. imputed_data() promises every original column, not
   # only the imputed ones, matching impute_mean()'s own contract.
+  # .id is positional (1:nrow(data)), not mice::complete()'s own .id, which
+  # copies `data`'s row names verbatim -- a custom or filtered row name
+  # ("row1", or a non-consecutive original row number) would otherwise
+  # contradict the class's own documented contract that .id is the original
+  # row *number*, and the record here is positional throughout.
   row_order <- rep(seq_len(nrow(data)), times = m)
   data_long <- data[row_order, , drop = FALSE]
   rownames(data_long) <- NULL
   for (v in vars) data_long[[v]] <- completed[[v]]
-  data_long <- cbind(
-    .imp = completed$.imp, .id = completed$.id, data_long
-  )
+  data_long <- cbind(.imp = completed$.imp, .id = row_order, data_long)
 
   # analysis_pass is identical for every draw (see hvti_imputation_multi),
   # so it is computed from one of them rather than stored m times.

@@ -86,6 +86,14 @@ macro copy in the corpus this package ports. Neither default is
 inherited here, for the reason recorded in \code{impute_mean()}'s own
 Divergences section.
 
+\strong{\code{vars} needs at least two columns.} \code{mice::mice()} fits chained
+equations, so a single column has no other column to condition on --
+passing one fails inside \code{mice} with no context. This function checks
+for it and refuses with an explanation instead.
+
+\strong{\code{data} cannot use \code{.imp} or \code{.id} as column names.} Both are reserved
+for the long-format draw index and row identifier this function adds.
+
 \strong{No pooling.} This function returns \code{m} valid completed datasets and
 their record. Combining them into a single inferential answer -- fitting
 a model to each draw and pooling by Rubin's rules -- is the caller's job.

@@ -188,12 +188,75 @@ test_that("character vars are refused -- levels are not decided silently", {
 test_that("m has no default and is validated", {
   dat <- multi_fixture()
   expect_error(
-    impute_multiple(dat, vars = "age", m = 0, maxit = 2),
+    impute_multiple(dat, vars = c("age", "grp"), m = 0, maxit = 2),
     "positive whole number"
   )
   expect_error(
-    impute_multiple(dat, vars = "age", m = 1.5, maxit = 2),
+    impute_multiple(dat, vars = c("age", "grp"), m = 1.5, maxit = 2),
     "positive whole number"
+  )
+})
+
+test_that("a `data` column named .imp or .id is refused, not collided", {
+  dat <- multi_fixture()
+  dat$.imp <- seq_len(nrow(dat))
+  expect_error(
+    impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2),
+    "reserved by impute_multiple"
+  )
+
+  dat2 <- multi_fixture()
+  dat2$.id <- NA_real_
+  expect_error(
+    impute_multiple(dat2, vars = c("age", "grp"), m = 2, maxit = 2),
+    "reserved by impute_multiple"
+  )
+})
+
+test_that(".id is positional, not mice's row-name-derived .id", {
+  dat <- multi_fixture(n = 15)
+  rownames(dat) <- paste0("row", seq_len(15))
+  out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2)
+
+  long <- imputed_data(out, imputation = "long")
+  expect_type(long$.id, "integer")
+  expect_equal(long$.id, rep(1:15, times = 2))
+})
+
+test_that("`vars` must name at least two columns", {
+  dat <- multi_fixture()
+  expect_error(
+    impute_multiple(dat, vars = "age", m = 2, maxit = 2),
+    "at least two columns"
+  )
+})
+
+test_that("`method` must be a character vector with unique names", {
+  dat <- multi_fixture()
+  expect_error(
+    impute_multiple(
+      dat, vars = c("age", "grp"), m = 2, maxit = 2,
+      method = list(age = "pmm")
+    ),
+    "named character vector"
+  )
+  expect_error(
+    impute_multiple(
+      dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2,
+      method = c(age = "pmm", age = "norm")
+    ),
+    "more than once"
+  )
+})
+
+test_that("a method incompatible with a logical column is refused", {
+  dat <- multi_fixture()
+  expect_error(
+    impute_multiple(
+      dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2,
+      method = c(flag = "norm")
+    ),
+    "not 0 or 1"
   )
 })
 
