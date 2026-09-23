@@ -121,3 +121,59 @@ collapse_names <- function(x) {
 plural <- function(x, one, many) {
   if (length(x) == 1L) one else many
 }
+
+# `vars` for impute_multiple(). Unlike impute_mean(), a categorical column is
+# a valid imputation target -- mice already knows how to model numeric,
+# factor and logical columns via its own per-column method dispatch. What it
+# does not know how to model is a column whose type is still undecided
+# (character) or whose storage rules are invisible to it (a classed
+# numeric), so those are refused for the same reason impute_mean() refuses
+# them: guessing either silently is a method choice made for the caller
+# rather than by them.
+validate_impute_vars <- function(data, vars, arg = "vars") {
+  vars <- validate_vars(data, vars, arg = arg, numeric_only = FALSE)
+
+  is_character <- vars[vapply(data[vars], is.character, logical(1))]
+  if (length(is_character) > 0L) {
+    stop(
+      "`", arg, "` names ", collapse_names(is_character), ", which ",
+      plural(is_character, "is", "are"), " still character. ",
+      "impute_multiple() does not decide what a category's levels are -- ",
+      "convert with factor() or r_data_types() first, so the levels are a ",
+      "choice you made rather than one made for you.",
+      call. = FALSE
+    )
+  }
+
+  supported <- vapply(data[vars], function(x) {
+    (is.numeric(x) && is.null(oldClass(x))) || is.factor(x) || is.logical(x)
+  }, logical(1))
+  unsupported <- vars[!supported]
+  if (length(unsupported) > 0L) {
+    cls <- vapply(data[unsupported], function(x) oldClass(x)[1], character(1))
+    stop(
+      "mice has no documented imputation method for ",
+      paste0("`", unsupported, "` <", cls, ">", collapse = ", "), ". ",
+      "Supported column classes are plain numeric, factor and logical; a ",
+      "classed numeric (Date, POSIXct, integer64) passes `is.numeric()` ",
+      "while carrying storage rules mice does not know about. Convert it ",
+      "yourself, so the conversion is a choice you made.",
+      call. = FALSE
+    )
+  }
+
+  vars
+}
+
+# `m` has no default for the same reason `vars` has none in impute_mean():
+# the SAS corpus's NIMPUTE defaults disagree across macro copies, so there is
+# no single "the default" this package could inherit without silently
+# choosing a method (single vs. multiple imputation) the caller did not ask
+# for.
+validate_m <- function(m) {
+  if (!is.numeric(m) || length(m) != 1L || is.na(m) || m < 1 || m %% 1 != 0) {
+    stop("`m` must be a single positive whole number. impute_multiple() ",
+         "will not choose it for you.", call. = FALSE)
+  }
+  as.integer(m)
+}

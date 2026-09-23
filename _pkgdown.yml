@@ -40,9 +40,11 @@ reference:
   desc: >
     One function per method, never one function with a `method=` argument.
     Single mean imputation is the SAS `imputsub` / `PROC STANDARD REPLACE`
-    job; multiple imputation is designed and not yet built.
+    job; multiple imputation (`PROC MI` / `mult_imput`) is a prototype, not
+    yet hardened or released, and does not pool its `m` completed datasets.
   contents:
   - impute_mean
+  - impute_multiple
 
 - title: "2. Read the record"
   desc: >
@@ -51,9 +53,11 @@ reference:
     a view of it.
   contents:
   - hvti_imputation
+  - hvti_imputation_multi
   - imputation-accessors
   - imputation_indicators
   - summary.hvti_imputation
+  - summary.hvti_imputation_multi
 
 - title: "Package"
   contents:

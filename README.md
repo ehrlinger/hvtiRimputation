@@ -28,7 +28,7 @@
 | Refusal to impute a classed numeric (`integer64`, `Date`), a non-finite mean, or a frame with duplicated column names | ✅ implemented |
 | The record: per-cell matrix, generated indicators, provenance | ✅ implemented |
 | `imputed_any()` / `complete_case_pass()` — the row-level attrition columns | ✅ implemented |
-| `impute_multiple()` — multiple imputation (`PROC MI`, `mult_imput`) | ⛔ designed, not built |
+| `impute_multiple()` — multiple imputation (`PROC MI`, `mult_imput`) | 🔬 prototype (`dev/specs/2026-09-23-impute-multiple-design.md`); not hardened or released |
 | Pooling (Rubin's rules) | ⛔ deferred — multiple imputation is only multiple imputation if the results are pooled, and that is separate work with its own verification |
 | The CONSORT annotation stage | ⛔ blocked on [hvtiPlotR#131](https://github.com/ehrlinger/hvtiPlotR/issues/131) |
 | `BY`-group means | ⛔ not measured, not built |
