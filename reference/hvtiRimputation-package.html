@@ -51,7 +51,7 @@
 scope. The package knows nothing about the warehouse, the build, or any
 study; any manifest or provenance context belongs to the caller.</p>
 <p><strong>Two entry points, never one.</strong> <code><a href="impute_mean.html">impute_mean()</a></code> fills each missing value
-with its variable's mean and returns one completed dataset (<code>PROC STANDARD ... REPLACE</code>, which the <code>imputsub</code> macro wraps). <code>impute_multiple()</code> will
+with its variable's mean and returns one completed dataset (<code>PROC STANDARD ... REPLACE</code>, which the <code>imputsub</code> macro wraps). <code><a href="impute_multiple.html">impute_multiple()</a></code> will
 generate <code>m</code> completed datasets for use with a pooling step
 (<code>PROC MI</code> / <code>mult_imput</code>); it is designed but not yet implemented.</p>
 <p>There is deliberately no single <code>impute()</code> with a <code>method=</code> argument. 223
@@ -63,7 +63,7 @@ which is exactly what a <code>method=</code> argument with a default would be. T
 functions cannot be confused by omission.</p>
 <p><strong>Nothing inherits a SAS default.</strong> <code>PROC STANDARD</code> with no <code>VAR</code> statement
 processes every numeric column, and <code><a href="impute_mean.html">impute_mean()</a></code> requires <code>vars</code>
-anyway; <code>impute_multiple()</code> will require <code>m</code>. The reason is that the corpus
+anyway; <code><a href="impute_multiple.html">impute_multiple()</a></code> will require <code>m</code>. The reason is that the corpus
 has no single answer to inherit. Five macro names exist in copies declaring
 different <code>NIMPUTE</code> defaults and three of them straddle 1, so a plurality
 default would silently convert a single-imputation call site into multiple

@@ -16,7 +16,8 @@ imputation_indicators(x, prefix = "imputed_")
 - x:
 
   An object of class
-  [hvti_imputation](https://ehrlinger.github.io/hvtiRimputation/reference/hvti_imputation.md).
+  [hvti_imputation](https://ehrlinger.github.io/hvtiRimputation/reference/hvti_imputation.md)
+  or `hvti_imputation_multi`.
 
 - prefix:
 

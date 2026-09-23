@@ -2,12 +2,18 @@
 
 Accessors for the object
 [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
-returns.
+returns, and (with one exception) for the object
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+returns. `imputed_data()` is the exception:
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)'s
+result holds `m` completed datasets, so `imputed_data(x, imputation)`
+requires a second argument there, with no default – see
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md).
 
 ## Usage
 
 ``` r
-imputed_data(x)
+imputed_data(x, ...)
 
 imputed_matrix(x)
 
@@ -20,6 +26,9 @@ analysis_pass(x)
 kept_by_imputation(x)
 
 imputation_provenance(x)
+
+# S3 method for class 'hvti_imputation_multi'
+imputed_data(x, imputation, ...)
 ```
 
 ## Arguments
@@ -27,7 +36,25 @@ imputation_provenance(x)
 - x:
 
   An object of class
-  [hvti_imputation](https://ehrlinger.github.io/hvtiRimputation/reference/hvti_imputation.md).
+  [hvti_imputation](https://ehrlinger.github.io/hvtiRimputation/reference/hvti_imputation.md)
+  or `hvti_imputation_multi`.
+
+- ...:
+
+  Passed on to methods. `imputed_data()`'s `hvti_imputation_multi`
+  method takes a required `imputation` argument this way; see
+  [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md).
+
+- imputation:
+
+  For the `hvti_imputation_multi` method: which completed dataset to
+  return. A single integer in `1:m`, or `"long"` for all `m` stacked
+  together. **Required, with no default** – there is no zero-argument
+  form that hands back something a caller could average cell by cell
+  across the `m` draws. See
+  `dev/specs/ 2026-09-23-impute-multiple-design.md` for why that
+  specific silent default would reproduce the exact bug this design was
+  written against.
 
 ## Value
 

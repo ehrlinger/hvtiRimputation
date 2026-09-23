@@ -42,7 +42,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.0" id="hvtirimputation-010">hvtiRimputation 0.1.0<a class="anchor" aria-label="anchor" href="#hvtirimputation-010"></a></h2>
 <p>First release. Single mean imputation, and the record that goes with it.</p>
-<ul><li><p>The <code><a href="../reference/impute_mean.html">impute_mean()</a></code> help page no longer tells readers to call the designed but unimplemented <code>impute_multiple()</code> function.</p></li>
+<ul><li><p>The <code><a href="../reference/impute_mean.html">impute_mean()</a></code> help page no longer tells readers to call the designed but unimplemented <code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> function.</p></li>
 <li><p>Coverage uploads without a Codecov token are now best-effort, so a successful package test run is not marked failed solely because tokenless upload is unavailable.</p></li>
 <li><p><strong><code><a href="../reference/impute_mean.html">impute_mean()</a></code></strong> ports <code>PROC STANDARD ... REPLACE</code> – the form with no <code>MEAN=</code>/<code>STD=</code>, which the <code>imputsub</code> macro wraps. Missing values are filled with the variable’s mean over its non-missing values; observed values are never touched.</p></li>
 <li><p><strong>The record is a logical matrix parallel to the data</strong>, one column per imputed variable, <code>TRUE</code> where a value was filled. Read it with <code><a href="../reference/imputation-accessors.html">imputed_matrix()</a></code>. A count cannot answer <em>was this patient’s value imputed?</em>, so the matrix is the primary artifact and <code><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary()</a></code> is a view of it rather than a replacement for it.</p></li>
@@ -70,7 +70,7 @@
 </ul></div>
 <div class="section level3">
 <h3 id="not-in-this-release-0-1-0">Not in this release<a class="anchor" aria-label="anchor" href="#not-in-this-release-0-1-0"></a></h3>
-<p><code>impute_multiple()</code> (<code>PROC MI</code>, <code>mult_imput</code>) is designed and not built. Pooling by Rubin’s rules is deferred: multiple imputation is only multiple imputation if the results are pooled, and that is separate work with its own verification. <code>BY</code>-group means are unmeasured in the corpus and unimplemented. <code>PROC STANDARD MEAN=0 STD=1 REPLACE</code>, which standardises <em>and</em> fills, is a different operation and is not what <code><a href="../reference/impute_mean.html">impute_mean()</a></code> does.</p>
+<p><code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> (<code>PROC MI</code>, <code>mult_imput</code>) is designed and not built. Pooling by Rubin’s rules is deferred: multiple imputation is only multiple imputation if the results are pooled, and that is separate work with its own verification. <code>BY</code>-group means are unmeasured in the corpus and unimplemented. <code>PROC STANDARD MEAN=0 STD=1 REPLACE</code>, which standardises <em>and</em> fills, is a different operation and is not what <code><a href="../reference/impute_mean.html">impute_mean()</a></code> does.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -42,7 +42,7 @@
       <h2 id="-impute"></h2><li>Impute</li>
 
 
-      <div class="section-desc"><p>One function per method, never one function with a <code>method=</code> argument. Single mean imputation is the SAS <code>imputsub</code> / <code>PROC STANDARD REPLACE</code> job; multiple imputation is designed and not yet built.</p></div>
+      <div class="section-desc"><p>One function per method, never one function with a <code>method=</code> argument. Single mean imputation is the SAS <code>imputsub</code> / <code>PROC STANDARD REPLACE</code> job; multiple imputation (<code>PROC MI</code> / <code>mult_imput</code>) is a prototype, not yet hardened or released, and does not pool its <code>m</code> completed datasets.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -55,6 +55,13 @@
 
         </dt>
         <dd>Fill missing values with the variable mean</dd>
+
+        <dt>
+
+          <code><a href="impute_multiple.html">impute_multiple()</a></code>
+
+        </dt>
+        <dd>Fill missing values with multiple imputation</dd>
       </dl></div><div class="section level2">
       <h2 id="-read-the-record"></h2><li>Read the record</li>
 
@@ -72,6 +79,13 @@
 
         </dt>
         <dd>The imputation record</dd>
+
+        <dt>
+
+          <code><a href="hvti_imputation_multi.html">hvti_imputation_multi</a></code>
+
+        </dt>
+        <dd>The multiple-imputation record</dd>
 
         <dt>
 
@@ -93,6 +107,13 @@
 
         </dt>
         <dd>Summarise what was imputed</dd>
+
+        <dt>
+
+          <code><a href="summary.hvti_imputation_multi.html">summary(<i>&lt;hvti_imputation_multi&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Summarise what was imputed, across the m completed datasets</dd>
       </dl></div><div class="section level2">
       <h2 id="package">Package<a class="anchor" aria-label="anchor" href="#package"></a></h2>
 

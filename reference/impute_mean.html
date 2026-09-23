@@ -98,7 +98,7 @@ other is a worse failure than no function at all.</p>
 
 <p><strong><code>vars</code> is required.</strong> <code>PROC STANDARD</code> with no <code>VAR</code> statement processes
 every numeric variable in the dataset. That default is not inherited here,
-for the same reason <code>impute_multiple()</code> inherits no <code>m</code>: an imputation that
+for the same reason <code><a href="impute_multiple.html">impute_multiple()</a></code> inherits no <code>m</code>: an imputation that
 silently chose its own variable list is the failure the record in this
 package exists to catch. A port that mean-imputes the <em>wrong</em> variable list
 still reaches the right row count and still looks correct; it does not
@@ -116,7 +116,7 @@ decision.</p>
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="imputation-accessors.html">imputed_any()</a></code> and <code><a href="imputation-accessors.html">complete_case_pass()</a></code> for the two row-level
 columns the attrition record consumes. Multiple imputation
-(<code>impute_multiple()</code>) is designed but not yet implemented; see the README.</p></div>
+(<code><a href="impute_multiple.html">impute_multiple()</a></code>) is designed but not yet implemented; see the README.</p></div>
     </div>
 
     <div class="section level2">

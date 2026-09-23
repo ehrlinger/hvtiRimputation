@@ -54,11 +54,13 @@ function at all.
 
 **`vars` is required.** `PROC STANDARD` with no `VAR` statement
 processes every numeric variable in the dataset. That default is not
-inherited here, for the same reason `impute_multiple()` inherits no `m`:
-an imputation that silently chose its own variable list is the failure
-the record in this package exists to catch. A port that mean-imputes the
-*wrong* variable list still reaches the right row count and still looks
-correct; it does not reach the right `sum(imputed_any())`.
+inherited here, for the same reason
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+inherits no `m`: an imputation that silently chose its own variable list
+is the failure the record in this package exists to catch. A port that
+mean-imputes the *wrong* variable list still reaches the right row count
+and still looks correct; it does not reach the right
+`sum(imputed_any())`.
 
 **`PROC STANDARD MEAN=0 STD=1 REPLACE` is not this function.** That form
 standardises *and* fills – in standardised units the fill value 0 is the
@@ -76,8 +78,9 @@ decision.
 and
 [`complete_case_pass()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
 for the two row-level columns the attrition record consumes. Multiple
-imputation (`impute_multiple()`) is designed but not yet implemented;
-see the README.
+imputation
+([`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md))
+is designed but not yet implemented; see the README.
 
 ## Examples
 

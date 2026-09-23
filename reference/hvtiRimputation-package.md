@@ -18,9 +18,10 @@ study; any manifest or provenance context belongs to the caller.
 [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
 fills each missing value with its variable's mean and returns one
 completed dataset (`PROC STANDARD ... REPLACE`, which the `imputsub`
-macro wraps). `impute_multiple()` will generate `m` completed datasets
-for use with a pooling step (`PROC MI` / `mult_imput`); it is designed
-but not yet implemented.
+macro wraps).
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+will generate `m` completed datasets for use with a pooling step
+(`PROC MI` / `mult_imput`); it is designed but not yet implemented.
 
 There is deliberately no single `impute()` with a `method=` argument.
 223 studies in the corpus call single mean imputation, 326 call multiple
@@ -33,13 +34,15 @@ functions cannot be confused by omission.
 **Nothing inherits a SAS default.** `PROC STANDARD` with no `VAR`
 statement processes every numeric column, and
 [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
-requires `vars` anyway; `impute_multiple()` will require `m`. The reason
-is that the corpus has no single answer to inherit. Five macro names
-exist in copies declaring different `NIMPUTE` defaults and three of them
-straddle 1, so a plurality default would silently convert a
-single-imputation call site into multiple imputation – a change of
-method under an unchanged call. Where this package has a default it is
-*ours*, and its documentation says so rather than claiming parity.
+requires `vars` anyway;
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+will require `m`. The reason is that the corpus has no single answer to
+inherit. Five macro names exist in copies declaring different `NIMPUTE`
+defaults and three of them straddle 1, so a plurality default would
+silently convert a single-imputation call site into multiple imputation
+– a change of method under an unchanged call. Where this package has a
+default it is *ours*, and its documentation says so rather than claiming
+parity.
 
 **What it promises about reproducing SAS.** For a call that states its
 `NIMPUTE` outright, the method and `m` are facts and an R run can be

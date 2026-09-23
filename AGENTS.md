@@ -16,7 +16,8 @@ and
 [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md),
 with [`print()`](https://rdrr.io/r/base/print.html) and
 [`summary()`](https://rdrr.io/r/base/summary.html) methods.
-`impute_multiple()` is designed and not built.
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+is designed and not built.
 
 **The scope boundary is load-bearing.** A data frame in, a data frame
 and a record out. This package knows nothing about the warehouse, the
@@ -32,10 +33,11 @@ matches the macro’s *arithmetic* – the fill value is the mean over
 non-missing values, and observed values are untouched. It deliberately
 does **not** inherit the macro’s *defaults*: `vars` is required where
 `PROC STANDARD` would process every numeric column, and
-`impute_multiple()` will require `m`. There is no “the SAS default” to
-inherit – five macro names exist in copies declaring different `NIMPUTE`
-defaults, three of them straddling 1. Know which side of that line a
-change falls on before claiming it matches SAS.
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+will require `m`. There is no “the SAS default” to inherit – five macro
+names exist in copies declaring different `NIMPUTE` defaults, three of
+them straddling 1. Know which side of that line a change falls on before
+claiming it matches SAS.
 
 This file is the operational contract and applies in full. It is tool
 neutral, so Codex and any other agent read the same rules. Claude Code
@@ -60,7 +62,7 @@ pkgdown gates arrived in 0.1.1.
 | `R-CMD-check.yaml` | `R CMD check` across platforms |
 | `check-manual.yaml` | `R CMD check --as-cran` **with the manual built** |
 | `pkgdown.yaml` | the site build, including any exported topic missing from `_pkgdown.yml`’s reference index |
-| `lint.yaml` | [`lintr::lint_package()`](https://lintr.r-lib.org/reference/lint.html) |
+| `lint.yaml` | `lintr::lint_package()` |
 | `house-style.yaml` | the composed house style |
 | `test-coverage.yaml` | coverage upload |
 

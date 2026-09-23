@@ -7,7 +7,9 @@ First release. Single mean imputation, and the record that goes with it.
 - The
   [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
   help page no longer tells readers to call the designed but
-  unimplemented `impute_multiple()` function.
+  unimplemented
+  [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  function.
 
 - Coverage uploads without a Codecov token are now best-effort, so a
   successful package test run is not marked failed solely because
@@ -100,11 +102,12 @@ First release. Single mean imputation, and the record that goes with it.
 
 ### Not in this release
 
-`impute_multiple()` (`PROC MI`, `mult_imput`) is designed and not built.
-Pooling by Rubin’s rules is deferred: multiple imputation is only
-multiple imputation if the results are pooled, and that is separate work
-with its own verification. `BY`-group means are unmeasured in the corpus
-and unimplemented. `PROC STANDARD MEAN=0 STD=1 REPLACE`, which
-standardises *and* fills, is a different operation and is not what
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+(`PROC MI`, `mult_imput`) is designed and not built. Pooling by Rubin’s
+rules is deferred: multiple imputation is only multiple imputation if
+the results are pooled, and that is separate work with its own
+verification. `BY`-group means are unmeasured in the corpus and
+unimplemented. `PROC STANDARD MEAN=0 STD=1 REPLACE`, which standardises
+*and* fills, is a different operation and is not what
 [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
 does.
