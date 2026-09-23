@@ -72,8 +72,8 @@ own per-column decision, \code{m} times.
 \code{impute_multiple()} trusts the class of each \code{vars} column as the sole
 signal for what kind of variable it is, and does not re-derive that from
 its distinct-value count. Deciding a column's type is
-\link[hvtiRutilities:r_data_types]{r_data_types()}'s job (or the caller's
-own \code{factor()}/\code{as.logical()}), done once, before imputation -- not a
+\code{hvtiRutilities::r_data_types()}'s job (or the caller's own
+\code{factor()}/\code{as.logical()}), done once, before imputation -- not a
 second, independent guess made here that could silently disagree with the
 first one.
 }
@@ -95,12 +95,19 @@ package README.
 }
 
 \examples{
+set.seed(42)
+n <- 30
 dat <- data.frame(
-  age = c(50, 60, NA, 70, 65, 55, 58, 62),
-  grp = factor(c("a", "b", NA, "a", "b", "a", "b", "a")),
-  flag = c(TRUE, FALSE, TRUE, NA, FALSE, TRUE, FALSE, TRUE)
+  age  = round(rnorm(n, 60, 8)),
+  grp  = factor(sample(c("a", "b", "c"), n, replace = TRUE)),
+  flag = sample(c(TRUE, FALSE), n, replace = TRUE)
 )
-out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+dat$age[sample(n, 4)]  <- NA
+dat$grp[sample(n, 4)]  <- NA
+dat$flag[sample(n, 4)] <- NA
+
+out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2,
+                       maxit = 2, seed = 1)
 imputed_data(out, imputation = 1)
 imputed_data(out, imputation = "long")
 imputed_matrix(out)

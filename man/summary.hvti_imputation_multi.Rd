@@ -25,10 +25,16 @@ is the entire point of multiple imputation, so no single value speaks for
 all of them.
 }
 \examples{
+set.seed(42)
+n <- 30
 dat <- data.frame(
-  age = c(50, 60, NA, 70, 65, 55),
-  grp = factor(c("a", "b", NA, "a", "b", "a"))
+  age = round(rnorm(n, 60, 8)),
+  grp = factor(sample(c("a", "b", "c"), n, replace = TRUE))
 )
-out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2)
+dat$age[sample(n, 4)] <- NA
+dat$grp[sample(n, 4)] <- NA
+
+out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2,
+                       seed = 1)
 summary(out)
 }

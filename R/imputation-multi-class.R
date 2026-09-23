@@ -87,8 +87,8 @@ imputed_data.hvti_imputation_multi <- function(x, imputation, ...) {
   if (identical(imputation, "long")) {
     return(x$data_long)
   }
-  if (!is.numeric(imputation) || length(imputation) != 1L || is.na(imputation) ||
-        !imputation %in% seq_len(m)) {
+  if (!is.numeric(imputation) || length(imputation) != 1L ||
+        is.na(imputation) || !imputation %in% seq_len(m)) {
     stop("`imputation` must be \"long\", or a single integer in 1:", m, ".",
          call. = FALSE)
   }
@@ -129,11 +129,17 @@ print.hvti_imputation_multi <- function(x, ...) {
 #'   of rows that is.
 #'
 #' @examples
+#' set.seed(42)
+#' n <- 30
 #' dat <- data.frame(
-#'   age = c(50, 60, NA, 70, 65, 55),
-#'   grp = factor(c("a", "b", NA, "a", "b", "a"))
+#'   age = round(rnorm(n, 60, 8)),
+#'   grp = factor(sample(c("a", "b", "c"), n, replace = TRUE))
 #' )
-#' out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2)
+#' dat$age[sample(n, 4)] <- NA
+#' dat$grp[sample(n, 4)] <- NA
+#'
+#' out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2,
+#'                        seed = 1)
 #' summary(out)
 #' @export
 summary.hvti_imputation_multi <- function(object, ...) {

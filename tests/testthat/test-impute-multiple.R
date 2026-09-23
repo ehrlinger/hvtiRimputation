@@ -7,10 +7,13 @@ multi_fixture <- function(n = 60, seed = 20260923) {
   set.seed(seed)
 
   x <- stats::rnorm(n)
+  breaks <- stats::quantile(x, probs = seq(0, 1, length.out = 4))
   dat <- data.frame(
     age  = round(50 + 10 * x + stats::rnorm(n, sd = 3)),
-    grp  = factor(cut(x, breaks = stats::quantile(x, probs = seq(0, 1, length.out = 4)),
-                      include.lowest = TRUE, labels = c("lo", "mid", "hi"))),
+    grp  = factor(cut(
+      x, breaks = breaks, include.lowest = TRUE,
+      labels = c("lo", "mid", "hi")
+    )),
     flag = x > stats::median(x)
   )
   dat$age[sample(n, round(0.15 * n))] <- NA
@@ -21,17 +24,21 @@ multi_fixture <- function(n = 60, seed = 20260923) {
 
 test_that("impute_multiple() returns an hvti_imputation_multi object", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2
+  )
 
   expect_s3_class(out, "hvti_imputation_multi")
 })
 
-test_that("every one of the m completed datasets holds only valid factor levels", {
+test_that("every completed dataset holds only valid factor levels", {
   # The empirical finding this design is built on: mice never invents a value
   # outside a factor's levels, in any single completed dataset. This is a
   # standing regression test for that property, not a one-off observation.
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 5, maxit = 3)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 5, maxit = 3
+  )
 
   for (i in 1:5) {
     grp_i <- imputed_data(out, imputation = i)$grp
@@ -40,9 +47,11 @@ test_that("every one of the m completed datasets holds only valid factor levels"
   }
 })
 
-test_that("imputed_data() on the multi class requires `imputation`, with no default", {
+test_that("imputed_data() on the multi class requires `imputation`", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2
+  )
 
   expect_error(imputed_data(out), "imputation.*is required")
 
@@ -54,7 +63,9 @@ test_that("imputed_data() on the multi class requires `imputation`, with no defa
 
 test_that("imputed_data(x, \"long\") stacks all m draws with .imp and .id", {
   dat <- multi_fixture(n = 20)
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2
+  )
 
   long <- imputed_data(out, imputation = "long")
 
@@ -65,12 +76,17 @@ test_that("imputed_data(x, \"long\") stacks all m draws with .imp and .id", {
   # Non-imputed columns are identical across every draw for a given row --
   # there is nothing here for mice to have varied.
   by_id <- split(long, long$.id)
-  expect_true(all(vapply(by_id, function(d) length(unique(d$.id)) == 1L, logical(1))))
+  one_id_each <- vapply(
+    by_id, function(d) length(unique(d$.id)) == 1L, logical(1)
+  )
+  expect_true(all(one_id_each))
 })
 
-test_that("imputed_data(x, i) returns every original column, matching impute_mean()'s contract", {
+test_that("imputed_data(x, i) returns every original column", {
   dat <- multi_fixture(n = 20)
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2
+  )
 
   one <- imputed_data(out, imputation = 1)
   expect_equal(names(one), names(dat))
@@ -79,9 +95,11 @@ test_that("imputed_data(x, i) returns every original column, matching impute_mea
   expect_false(".id" %in% names(one))
 })
 
-test_that("method defaults to mice's own per-column dispatch, never one string for every column", {
+test_that("method defaults to mice's own per-column dispatch", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2
+  )
 
   methods <- imputation_provenance(out)$method
   expect_equal(unname(methods["age"]), "pmm")
@@ -105,22 +123,26 @@ test_that("a `method` override only replaces the named column(s)", {
   expect_equal(unname(methods["flag"]), "logreg")
 })
 
-test_that("`method` must be a named vector -- an unnamed single string is refused", {
+test_that("`method` must be a named vector, not a single string", {
   dat <- multi_fixture()
   expect_error(
-    impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2,
-                    method = "pmm"),
+    impute_multiple(
+      dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2,
+      method = "pmm"
+    ),
     "named character vector"
   )
 })
 
-test_that("a logical vars column round-trips as logical in every completed draw", {
+test_that("a logical vars column round-trips as logical in every draw", {
   # mice's own default (logreg) silently returns a logical column as plain
   # numeric 0/1 in complete() -- confirmed empirically against mice 3.19.0.
   # impute_multiple() restores the class explicitly; this is the regression
   # test for that restoration.
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 3, maxit = 2
+  )
 
   long <- imputed_data(out, imputation = "long")
   expect_type(long$flag, "logical")
@@ -129,9 +151,11 @@ test_that("a logical vars column round-trips as logical in every completed draw"
   }
 })
 
-test_that("imputed_matrix(), complete_case_pass() and analysis_pass() are single vectors/matrix, not lists of m", {
+test_that("the matrix and row-level accessors are not lists of m", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 4, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 4, maxit = 2
+  )
 
   expect_true(is.matrix(imputed_matrix(out)))
   expect_false(is.list(complete_case_pass(out)))
@@ -140,9 +164,11 @@ test_that("imputed_matrix(), complete_case_pass() and analysis_pass() are single
   expect_length(analysis_pass(out), nrow(dat))
 })
 
-test_that("imputed_matrix() matches is.na() on the original data, for every vars column", {
+test_that("imputed_matrix() matches is.na() on the original data", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2
+  )
 
   mat <- imputed_matrix(out)
   expect_equal(unname(mat[, "age"]), is.na(dat$age))
@@ -150,7 +176,7 @@ test_that("imputed_matrix() matches is.na() on the original data, for every vars
   expect_equal(unname(mat[, "flag"]), is.na(dat$flag))
 })
 
-test_that("character vars are refused -- impute_multiple() does not decide category levels", {
+test_that("character vars are refused -- levels are not decided silently", {
   dat <- multi_fixture()
   dat$chr <- as.character(dat$grp)
   expect_error(
@@ -161,17 +187,25 @@ test_that("character vars are refused -- impute_multiple() does not decide categ
 
 test_that("m has no default and is validated", {
   dat <- multi_fixture()
-  expect_error(impute_multiple(dat, vars = "age", m = 0, maxit = 2),
-              "positive whole number")
-  expect_error(impute_multiple(dat, vars = "age", m = 1.5, maxit = 2),
-              "positive whole number")
+  expect_error(
+    impute_multiple(dat, vars = "age", m = 0, maxit = 2),
+    "positive whole number"
+  )
+  expect_error(
+    impute_multiple(dat, vars = "age", m = 1.5, maxit = 2),
+    "positive whole number"
+  )
 })
 
-test_that("summary() reports method, n_imputed and prop_imputed per variable, no fill_value", {
+test_that("summary() reports method and counts, with no fill_value", {
   dat <- multi_fixture()
-  out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2)
+  out <- impute_multiple(
+    dat, vars = c("age", "grp", "flag"), m = 2, maxit = 2
+  )
 
   s <- summary(out)
-  expect_setequal(names(s), c("variable", "method", "n_imputed", "prop_imputed"))
+  expect_setequal(
+    names(s), c("variable", "method", "n_imputed", "prop_imputed")
+  )
   expect_equal(sort(s$variable), sort(c("age", "grp", "flag")))
 })
