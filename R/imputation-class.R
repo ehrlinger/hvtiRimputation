@@ -57,7 +57,11 @@ new_hvti_imputation <- function(data, matrix, complete_case_pass, analysis_pass,
 
 #' Read an imputation record
 #'
-#' Accessors for the object [impute_mean()] returns.
+#' Accessors for the object [impute_mean()] returns, and (with one exception)
+#' for the object [impute_multiple()] returns. `imputed_data()` is the
+#' exception: [impute_multiple()]'s result holds `m` completed datasets, so
+#' `imputed_data(x, imputation)` requires a second argument there, with no
+#' default -- see [impute_multiple()].
 #'
 #' `imputed_any()` and `complete_case_pass()` are the two row-level columns the
 #' attrition record consumes. They enter a CONSORT tracker as an **annotation**
@@ -77,7 +81,10 @@ new_hvti_imputation <- function(data, matrix, complete_case_pass, analysis_pass,
 #' analysis set was every row, so post-imputation completeness was uniformly
 #' `TRUE` and the wrong formula gave the right answer.
 #'
-#' @param x An object of class [hvti_imputation].
+#' @param x An object of class [hvti_imputation] or `hvti_imputation_multi`.
+#' @param ... Passed on to methods. `imputed_data()`'s
+#'   `hvti_imputation_multi` method takes a required `imputation` argument
+#'   this way; see [impute_multiple()].
 #'
 #' @return `imputed_data()` a data frame; `imputed_matrix()` a logical matrix;
 #'   `imputed_any()`, `complete_case_pass()`, `analysis_pass()` and
@@ -99,45 +106,68 @@ new_hvti_imputation <- function(data, matrix, complete_case_pass, analysis_pass,
 #' @name imputation-accessors
 NULL
 
+# Both hvti_imputation (single imputation) and hvti_imputation_multi
+# (multiple imputation, see impute-multiple.R) store these five fields in
+# the same shape -- matrix, complete_case_pass and analysis_pass are each a
+# single vector/matrix for both classes, never a list of m, because which
+# cells were missing and whether a row is complete do not vary across the m
+# completed datasets (see the design note in
+# dev/specs/2026-09-23-impute-multiple-design.md). So these six accessors
+# read identically from either class and are not made into S3 generics --
+# only imputed_data()'s contract genuinely differs by class.
+.stopifnot_hvti_imputation <- function(x) {
+  stopifnot(inherits(x, c("hvti_imputation", "hvti_imputation_multi")))
+}
+
 #' @rdname imputation-accessors
 #' @export
-imputed_data <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+imputed_data <- function(x, ...) {
+  UseMethod("imputed_data")
+}
+
+#' @export
+imputed_data.hvti_imputation <- function(x, ...) {
   x$data
+}
+
+#' @export
+imputed_data.default <- function(x, ...) {
+  stop("`x` must be an object of class `hvti_imputation` or ",
+       "`hvti_imputation_multi`, not ", class(x)[1], ".", call. = FALSE)
 }
 
 #' @rdname imputation-accessors
 #' @export
 imputed_matrix <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   x$matrix
 }
 
 #' @rdname imputation-accessors
 #' @export
 imputed_any <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   unname(rowSums(x$matrix) > 0L)
 }
 
 #' @rdname imputation-accessors
 #' @export
 complete_case_pass <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   unname(x$complete_case_pass)
 }
 
 #' @rdname imputation-accessors
 #' @export
 analysis_pass <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   unname(x$analysis_pass)
 }
 
 #' @rdname imputation-accessors
 #' @export
 kept_by_imputation <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   # post AND NOT pre. A row that is still incomplete after imputing is not in
   # the analysis, so it was not kept by imputation -- which is why this is not
   # `imputed_any(x) & !complete_case_pass(x)`.
@@ -147,7 +177,7 @@ kept_by_imputation <- function(x) {
 #' @rdname imputation-accessors
 #' @export
 imputation_provenance <- function(x) {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   x$provenance
 }
 
@@ -182,7 +212,7 @@ imputation_provenance <- function(x) {
 #' imputation_indicators(out, prefix = "ms_")
 #' @export
 imputation_indicators <- function(x, prefix = "imputed_") {
-  stopifnot(inherits(x, "hvti_imputation"))
+  .stopifnot_hvti_imputation(x)
   if (!is.character(prefix) || length(prefix) != 1L || is.na(prefix)) {
     stop("`prefix` must be a single string.", call. = FALSE)
   }

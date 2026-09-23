@@ -7,7 +7,7 @@
 imputation_indicators(x, prefix = "imputed_")
 }
 \arguments{
-\item{x}{An object of class \link{hvti_imputation}.}
+\item{x}{An object of class \link{hvti_imputation} or \code{hvti_imputation_multi}.}
 
 \item{prefix}{Prepended to each imputed variable's name. Defaults to
 \code{"imputed_"}.}
