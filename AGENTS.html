@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -109,6 +109,8 @@
 <strong><code>PROC STANDARD</code> without <code>REPLACE</code> is not imputation at all.</strong> Standardisation only. The corpus scan (<code>hvtiRdatabuild/dev/specs/artifacts/imputation-method-scan.R</code>) separates the three cases; read it before adding a fourth.</li>
 <li>
 <strong>A study being reproduced takes its <code>m</code> from that study’s own saved output, never from the macro it called.</strong> The macro cannot tell you; the log can.</li>
+<li>
+<strong>Every random draw runs inside <code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code>, and a test enforces it.</strong> <code>tests/testthat/test-reproducibility.R</code> parses <code>R/</code> and fails on an unseeded call to its audited set – every <code>stats</code> generator, base sampling, and the named package APIs; add a new API there when it is adopted. What the AVSD virtual-twins study measured (2026-10-07, randomForestSRC 3.9.0, varPro 3.3.0): <code>mice(seed =)</code> seeds itself; <code>randomForestSRC</code> wants a <strong>negative</strong> <code>seed =</code> and its unseeded inner forests read R’s RNG, so it needs the seed set as well; <code>varPro</code> reads R’s RNG even when given <code>seed =</code>; and <code>randomForestSRC</code> under OpenMP is not run-to-run stable, so pin <code>options(rf.cores = 1L)</code> if it is ever added here. None of the last three is a dependency yet.</li>
 <li>
 <strong>Filling an integer column returns a double.</strong> The mean is rarely integral and R widens the column on assignment. This is correct and matches what <code>PROC STANDARD</code> writes, but it will surprise a caller comparing types.</li>
 </ul></div>

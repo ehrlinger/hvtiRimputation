@@ -1,5 +1,37 @@
 # Changelog
 
+## hvtiRimputation 0.1.2
+
+- **[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  is now reproducible by default (breaking).** `seed` is required,
+  either as an argument or once per session through
+  `options(hvtiRimputation.seed = )`; with neither, the call fails. The
+  old default, `seed = NA`, left the draws to whatever state R’s RNG
+  happened to be in. The `mice` call now runs under
+  [`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
+  with the RNG kind pinned to R’s defaults, so the same seed gives the
+  same imputations after any
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) or
+  [`RNGkind()`](https://rdrr.io/r/base/Random.html) change, and the
+  caller’s own random stream is restored afterwards. A call that already
+  passed a seed gets the same values as before under R’s default RNG
+  kind. `withr` is a new import.
+- A new test parses `R/` and fails on a call outside
+  [`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
+  to any function in a defined audited set: every `stats` random
+  generator (found from the installed `stats` exports, so new ones are
+  covered), [`sample()`](https://rdrr.io/r/base/sample.html),
+  [`jitter()`](https://rdrr.io/r/base/jitter.html),
+  [`simulate()`](https://rdrr.io/r/stats/simulate.html), `mice`,
+  `randomForestSRC` and `varPro`. It also fails on a `randomForestSRC`
+  call without a negative `seed =`, and it self-tests on planted
+  violations. A function that draws from the RNG internally without
+  being in that set is outside the audit.
+- Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the
+  HVTI family. `hvtiR::install()` installs the members together, and
+  several already required 4.4.0, so on an older R the install failed
+  whatever this package declared.
+
 ## hvtiRimputation 0.1.1
 
 ### New features

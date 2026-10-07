@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,6 +39,13 @@
       <small>Source: <a href="https://github.com/ehrlinger/hvtiRimputation/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.2" id="hvtirimputation-012">hvtiRimputation 0.1.2<a class="anchor" aria-label="anchor" href="#hvtirimputation-012"></a></h2>
+<ul><li>
+<strong><code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> is now reproducible by default (breaking).</strong> <code>seed</code> is required, either as an argument or once per session through <code>options(hvtiRimputation.seed = )</code>; with neither, the call fails. The old default, <code>seed = NA</code>, left the draws to whatever state R’s RNG happened to be in. The <code>mice</code> call now runs under <code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code> with the RNG kind pinned to R’s defaults, so the same seed gives the same imputations after any <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed()</a></code> or <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">RNGkind()</a></code> change, and the caller’s own random stream is restored afterwards. A call that already passed a seed gets the same values as before under R’s default RNG kind. <code>withr</code> is a new import.</li>
+<li>A new test parses <code>R/</code> and fails on a call outside <code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code> to any function in a defined audited set: every <code>stats</code> random generator (found from the installed <code>stats</code> exports, so new ones are covered), <code><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample()</a></code>, <code><a href="https://rdrr.io/r/base/jitter.html" class="external-link">jitter()</a></code>, <code><a href="https://rdrr.io/r/stats/simulate.html" class="external-link">simulate()</a></code>, <code>mice</code>, <code>randomForestSRC</code> and <code>varPro</code>. It also fails on a <code>randomForestSRC</code> call without a negative <code>seed =</code>, and it self-tests on planted violations. A function that draws from the RNG internally without being in that set is outside the audit.</li>
+<li>Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the HVTI family. <code>hvtiR::install()</code> installs the members together, and several already required 4.4.0, so on an older R the install failed whatever this package declared.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="hvtirimputation-011">hvtiRimputation 0.1.1<a class="anchor" aria-label="anchor" href="#hvtirimputation-011"></a></h2>
 <div class="section level3">

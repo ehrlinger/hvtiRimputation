@@ -15,7 +15,7 @@ impute_multiple(
   cc_vars = names(data),
   method = NULL,
   maxit = 5L,
-  seed = NA_integer_
+  seed = getOption("hvtiRimputation.seed")
 )
 ```
 
@@ -59,9 +59,13 @@ impute_multiple(
 
 - seed:
 
-  Passed to
-  [`mice::mice()`](https://amices.org/mice/reference/mice.html). `NA`
-  (the default) means `mice` does not set one.
+  A single whole number. **Required**, either here or once per session
+  through `options(hvtiRimputation.seed = )`, which is where the default
+  reads it from. With neither, the call fails rather than drawing from
+  an unseeded RNG. Passed to
+  [`mice::mice()`](https://amices.org/mice/reference/mice.html) and
+  recorded in
+  [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md).
 
 ## Value
 
@@ -102,6 +106,24 @@ its distinct-value count. Deciding a column's type is
 [`factor()`](https://rdrr.io/r/base/factor.html)/[`as.logical()`](https://rdrr.io/r/base/logical.html)),
 done once, before imputation – not a second, independent guess made here
 that could silently disagree with the first one.
+
+**Reproducibility.** The same `data`, arguments and `seed` give the same
+imputed values whatever state R's random number generator was in
+beforehand. The call runs under
+[`withr::with_seed()`](https://withr.r-lib.org/reference/with_seed.html)
+with the RNG kind pinned to R's defaults (`"Mersenne-Twister"`,
+`"Inversion"`, `"Rejection"`), so a caller who changed
+[`RNGkind()`](https://rdrr.io/r/base/Random.html) still gets the same
+draws, and the caller's own RNG state is restored afterwards: calling
+this function does not move their random stream. Before 0.1.2 the
+default was `seed = NA`, which left the draws to whatever the global RNG
+held; a call that already passed a seed gets the same values as before
+when the RNG kind is R's default.
+
+**Choosing `m`.** For a prediction model, `m = 1`, an outcome-free
+single draw, is defensible. `m > 1` costs more but lets a downstream
+variable screen show how much its selection depends on which draw it
+saw.
 
 ## Divergences from SAS
 

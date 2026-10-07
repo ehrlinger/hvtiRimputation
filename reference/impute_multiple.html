@@ -13,7 +13,7 @@ wraps."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -62,7 +62,7 @@ wraps.</p>
 <span>  cc_vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span>,</span>
 <span>  method <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  maxit <span class="op">=</span> <span class="fl">5L</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NA_integer_</span></span>
+<span>  seed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"hvtiRimputation.seed"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -106,8 +106,11 @@ There is no single unnamed string form.</p></dd>
 
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
-<dd><p>Passed to <code><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice::mice()</a></code>. <code>NA</code> (the default) means <code>mice</code>
-does not set one.</p></dd>
+<dd><p>A single whole number. <strong>Required</strong>, either here or once per
+session through <code>options(hvtiRimputation.seed = )</code>, which is where the
+default reads it from. With neither, the call fails rather than drawing
+from an unseeded RNG. Passed to <code><a href="https://amices.org/mice/reference/mice.html" class="external-link">mice::mice()</a></code> and recorded in
+<code><a href="imputation-accessors.html">imputation_provenance()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -140,6 +143,19 @@ its distinct-value count. Deciding a column's type is
 <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code>/<code><a href="https://rdrr.io/r/base/logical.html" class="external-link">as.logical()</a></code>), done once, before imputation – not a
 second, independent guess made here that could silently disagree with the
 first one.</p>
+<p><strong>Reproducibility.</strong> The same <code>data</code>, arguments and <code>seed</code> give the same
+imputed values whatever state R's random number generator was in
+beforehand. The call runs under <code><a href="https://withr.r-lib.org/reference/with_seed.html" class="external-link">withr::with_seed()</a></code> with the RNG kind
+pinned to R's defaults (<code>"Mersenne-Twister"</code>, <code>"Inversion"</code>,
+<code>"Rejection"</code>), so a caller who changed <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">RNGkind()</a></code> still gets the same
+draws, and the caller's own RNG state is restored afterwards: calling
+this function does not move their random stream. Before 0.1.2 the default
+was <code>seed = NA</code>, which left the draws to whatever the global RNG held;
+a call that already passed a seed gets the same values as before when the
+RNG kind is R's default.</p>
+<p><strong>Choosing <code>m</code>.</strong> For a prediction model, <code>m = 1</code>, an outcome-free
+single draw, is defensible. <code>m &gt; 1</code> costs more but lets a downstream
+variable screen show how much its selection depends on which draw it saw.</p>
     </div>
     <div class="section level2">
     <h2 id="divergences-from-sas">Divergences from SAS<a class="anchor" aria-label="anchor" href="#divergences-from-sas"></a></h2>
