@@ -104,9 +104,21 @@ test_that("an unseeded call is refused, not drawn", {
 # must also pass one, and randomForestSRC wants that seed negative: its own
 # forest calls otherwise take their seed from R's RNG.
 
+# The audited set. Every stats r* generator is found from the installed
+# stats exports, by its d* density partner (rnorm/dnorm, rwilcox/dwilcox),
+# so a generator R adds later is covered without editing this list. The r*
+# generators with no d* partner, base R's sampling, and the package APIs that
+# draw internally are named by hand. A function that draws from the RNG
+# without being any of these is outside the audit.
+stats_exports <- getNamespaceExports("stats")
+stats_r <- grep("^r", stats_exports, value = TRUE)
+stats_generators <- stats_r[
+  paste0("d", substring(stats_r, 2L)) %in% stats_exports
+]
 random_fns <- c(
-  "sample", "sample.int", "runif", "rnorm", "rbinom", "rpois", "rexp",
-  "rgamma", "rbeta", "rmultinom", "rlogis", "rweibull", "rt", "rchisq",
+  stats_generators,
+  "r2dtable", "rWishart", "rsmirnov", "simulate",
+  "sample", "sample.int", "jitter",
   "mice", "rfsrc", "rfsrc.fast", "impute", "impute.rfsrc", "varpro"
 )
 needs_seed_arg <- c("mice", "rfsrc", "rfsrc.fast", "impute", "impute.rfsrc",
@@ -159,6 +171,13 @@ test_that("the audit catches an unseeded random call (self-test)", {
   flags <- function(code) unseeded_random_calls(code)
 
   expect_length(flags(quote(function(x) sample(x))), 1L)
+  # Generators the first hand-written list missed, now found from stats.
+  for (gen in c("rlnorm", "rnbinom", "rgeom", "rhyper", "rsignrank",
+                "rwilcox", "rcauchy")) {
+    expect_true(gen %in% random_fns, info = gen)
+  }
+  expect_length(flags(quote(function(n) stats::rlnorm(n))), 1L)
+  expect_length(flags(quote(function(n) rwilcox(n, 3, 4))), 1L)
   expect_length(flags(quote(function(x) x[sample(length(x)), ])), 1L)
   expect_match(flags(quote(function(d) mice::mice(d, m = 1))),
                "not inside", all = FALSE)

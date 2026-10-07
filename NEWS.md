@@ -9,10 +9,13 @@
   any `set.seed()` or `RNGkind()` change, and the caller's own random stream
   is restored afterwards. A call that already passed a seed gets the same
   values as before under R's default RNG kind. `withr` is a new import.
-* A new test parses `R/` and fails on any random call (`sample()`, `r*()`,
-  `mice`, `randomForestSRC`, `varPro`) outside `withr::with_seed()`, or a
-  `randomForestSRC` call without a negative `seed =`. It self-tests on a
-  planted violation.
+* A new test parses `R/` and fails on a call outside `withr::with_seed()` to
+  any function in a defined audited set: every `stats` random generator
+  (found from the installed `stats` exports, so new ones are covered),
+  `sample()`, `jitter()`, `simulate()`, `mice`, `randomForestSRC` and
+  `varPro`. It also fails on a `randomForestSRC` call without a negative
+  `seed =`, and it self-tests on planted violations. A function that draws
+  from the RNG internally without being in that set is outside the audit.
 * Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the
   HVTI family. `hvtiR::install()` installs the members together, and several
   already required 4.4.0, so on an older R the install failed whatever this

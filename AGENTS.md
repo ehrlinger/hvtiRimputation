@@ -168,7 +168,9 @@ the first draft of that design silently resurrected excluded patients.
   can.
 - **Every random draw runs inside `withr::with_seed()`, and a test enforces
   it.** `tests/testthat/test-reproducibility.R` parses `R/` and fails on an
-  unseeded call. What the AVSD virtual-twins study measured (2026-10-07,
+  unseeded call to its audited set -- every `stats` generator, base
+  sampling, and the named package APIs; add a new API there when it is
+  adopted. What the AVSD virtual-twins study measured (2026-10-07,
   randomForestSRC 3.9.0, varPro 3.3.0): `mice(seed =)` seeds itself;
   `randomForestSRC` wants a **negative** `seed =` and its unseeded inner
   forests read R's RNG, so it needs the seed set as well; `varPro` reads R's
