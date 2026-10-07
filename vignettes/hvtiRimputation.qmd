@@ -119,8 +119,8 @@ data.frame(
 
 `complete_case_pass()` is read from the data *before* anything was filled, over
 `cc_vars` (every column, by default). `analysis_pass()` is the same test after
-the fill. `kept_by_imputation()` is the row that fails the first and passes the
-second.
+the fill. `kept_by_imputation()` flags the rows that fail the first and pass
+the second.
 
 Look at row 6. Its `age` was filled, so `imputed_any()` is `TRUE`, but its
 `outcome` is still missing, so it never enters the analysis. That is why the
@@ -207,8 +207,8 @@ mi
 `m` and `seed` are both required. Copies of the SAS macros declare different
 `NIMPUTE` defaults, and they don't even agree on whether the default is 1, so
 there is no default to inherit. An unseeded draw can't be reproduced. You can set the
-seed once per session with `options(hvtiRimputation.seed = )` instead of
-passing it every call.
+seed once per session with `options(hvtiRimputation.seed = 20261007)` instead
+of passing it every call.
 
 `imputed_data()` needs to be told which draw you want, either one completed
 dataset or all of them stacked long with `.imp` and `.id` columns:
