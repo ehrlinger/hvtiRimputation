@@ -1,3 +1,8 @@
+# Every call here draws under one session seed, read through the option
+# impute_multiple() uses as its default. The seed itself is tested in
+# test-reproducibility.R.
+withr::local_options(hvtiRimputation.seed = 20261007L)
+
 # A larger, seeded frame: mice needs enough rows and signal to fit ridge-free
 # models for pmm/logreg/polyreg, which fixture_frame()'s 4 rows cannot give.
 # grp is a genuine 3-level unordered factor -- exactly the shape whose
