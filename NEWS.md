@@ -1,3 +1,13 @@
+# hvtiRimputation (unreleased)
+
+* New Overview vignette, `vignette("hvtiRimputation")`. It walks one small
+  synthetic example from `impute_mean()` through the record, the row-level
+  attrition columns, indicators, provenance and the inputs the package
+  refuses, then shows the `impute_multiple()` prototype.
+  Vignettes put the table of contents on the left and use the full window
+  width, set once in `vignettes/_quarto.yml`, with `pkgdown/extra.css` giving
+  the pkgdown articles the same layout. `quarto` and `knitr` join `Suggests`.
+
 # hvtiRimputation 0.1.2
 
 * **`impute_multiple()` is now reproducible by default (breaking).** `seed`

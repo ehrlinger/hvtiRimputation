@@ -23,7 +23,10 @@ Imports:
     withr (>= 2.5.0)
 Suggests:
     bit64,
+    knitr,
+    quarto,
     testthat (>= 3.0.0)
+VignetteBuilder: quarto
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.1.0
