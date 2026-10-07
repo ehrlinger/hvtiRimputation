@@ -37,8 +37,27 @@
 #'   There is no single unnamed string form.
 #' @param maxit Number of chained-equations iterations. Passed to
 #'   `mice::mice()`.
-#' @param seed Passed to `mice::mice()`. `NA` (the default) means `mice`
-#'   does not set one.
+#' @param seed A single whole number. **Required**, either here or once per
+#'   session through `options(hvtiRimputation.seed = )`, which is where the
+#'   default reads it from. With neither, the call fails rather than drawing
+#'   from an unseeded RNG. Passed to `mice::mice()` and recorded in
+#'   [imputation_provenance()].
+#'
+#' @details
+#' **Reproducibility.** The same `data`, arguments and `seed` give the same
+#' imputed values whatever state R's random number generator was in
+#' beforehand. The call runs under `withr::with_seed()` with the RNG kind
+#' pinned to R's defaults (`"Mersenne-Twister"`, `"Inversion"`,
+#' `"Rejection"`), so a caller who changed [RNGkind()] still gets the same
+#' draws, and the caller's own RNG state is restored afterwards: calling
+#' this function does not move their random stream. Before 0.1.2 the default
+#' was `seed = NA`, which left the draws to whatever the global RNG held;
+#' a call that already passed a seed gets the same values as before when the
+#' RNG kind is R's default.
+#'
+#' **Choosing `m`.** For a prediction model, `m = 1`, an outcome-free
+#' single draw, is defensible. `m > 1` costs more but lets a downstream
+#' variable screen show how much its selection depends on which draw it saw.
 #'
 #' @return An object of class `hvti_imputation_multi`.
 #'   [imputed_data()] with a required `imputation` argument gives one
@@ -94,7 +113,8 @@
 #'   record consumes.
 #' @export
 impute_multiple <- function(data, vars, m, cc_vars = names(data),
-                            method = NULL, maxit = 5L, seed = NA_integer_) {
+                            method = NULL, maxit = 5L,
+                            seed = getOption("hvtiRimputation.seed")) {
   data <- validate_data(data)
 
   # .imp and .id are the long-format draw index and row identifier this
@@ -129,6 +149,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   }
   cc_vars <- validate_vars(data, cc_vars, arg = "cc_vars", numeric_only = FALSE)
   m <- validate_m(m)
+  seed <- validate_seed(seed)
 
   # Read BEFORE anything is filled, same reasoning as impute_mean()'s cc_pre:
   # evaluated on the completed data every row over `cc_vars` would pass.
@@ -176,9 +197,19 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     method_vec[names(method)] <- method
   }
 
-  mice_fit <- mice::mice(
-    imp_input, m = m, maxit = maxit, method = method_vec,
-    seed = seed, printFlag = FALSE
+  # mice seeds itself from `seed`, but it does so by calling set.seed() on
+  # the caller's global RNG. with_seed() sets the same seed under a pinned
+  # RNG kind, so a caller who changed RNGkind() still gets the same draws,
+  # and restores the caller's RNG state afterwards.
+  mice_fit <- withr::with_seed(
+    seed,
+    mice::mice(
+      imp_input, m = m, maxit = maxit, method = method_vec,
+      seed = seed, printFlag = FALSE
+    ),
+    .rng_kind = "Mersenne-Twister",
+    .rng_normal_kind = "Inversion",
+    .rng_sample_kind = "Rejection"
   )
 
   completed <- mice::complete(mice_fit, "long")

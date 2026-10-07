@@ -11,7 +11,7 @@ impute_multiple(
   cc_vars = names(data),
   method = NULL,
   maxit = 5L,
-  seed = NA_integer_
+  seed = getOption("hvtiRimputation.seed")
 )
 }
 \arguments{
@@ -38,8 +38,11 @@ There is no single unnamed string form.}
 \item{maxit}{Number of chained-equations iterations. Passed to
 \code{mice::mice()}.}
 
-\item{seed}{Passed to \code{mice::mice()}. \code{NA} (the default) means \code{mice}
-does not set one.}
+\item{seed}{A single whole number. \strong{Required}, either here or once per
+session through \code{options(hvtiRimputation.seed = )}, which is where the
+default reads it from. With neither, the call fails rather than drawing
+from an unseeded RNG. Passed to \code{mice::mice()} and recorded in
+\code{\link[=imputation_provenance]{imputation_provenance()}}.}
 }
 \value{
 An object of class \code{hvti_imputation_multi}.
@@ -76,6 +79,21 @@ its distinct-value count. Deciding a column's type is
 \code{factor()}/\code{as.logical()}), done once, before imputation -- not a
 second, independent guess made here that could silently disagree with the
 first one.
+
+\strong{Reproducibility.} The same \code{data}, arguments and \code{seed} give the same
+imputed values whatever state R's random number generator was in
+beforehand. The call runs under \code{withr::with_seed()} with the RNG kind
+pinned to R's defaults (\code{"Mersenne-Twister"}, \code{"Inversion"},
+\code{"Rejection"}), so a caller who changed \code{\link[=RNGkind]{RNGkind()}} still gets the same
+draws, and the caller's own RNG state is restored afterwards: calling
+this function does not move their random stream. Before 0.1.2 the default
+was \code{seed = NA}, which left the draws to whatever the global RNG held;
+a call that already passed a seed gets the same values as before when the
+RNG kind is R's default.
+
+\strong{Choosing \code{m}.} For a prediction model, \code{m = 1}, an outcome-free
+single draw, is defensible. \code{m > 1} costs more but lets a downstream
+variable screen show how much its selection depends on which draw it saw.
 }
 \section{Divergences from SAS}{
 

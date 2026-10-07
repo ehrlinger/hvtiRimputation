@@ -177,3 +177,23 @@ validate_m <- function(m) {
   }
   as.integer(m)
 }
+
+# `seed` arrives either from the caller or from
+# getOption("hvtiRimputation.seed"); NULL means neither supplied one. An
+# unseeded draw is refused rather than defaulted: a fixed package seed would
+# give every study the same draws without anyone choosing that, and NA would
+# leave the result hostage to whatever R's RNG state happened to be.
+validate_seed <- function(seed) {
+  if (is.null(seed)) {
+    stop("`seed` is required. Pass `seed =`, or set ",
+         "options(hvtiRimputation.seed = <whole number>) once for the ",
+         "session. impute_multiple() will not draw from an unseeded RNG, ",
+         "because the result could not be reproduced.", call. = FALSE)
+  }
+  if (!is.numeric(seed) || length(seed) != 1L || !is.finite(seed) ||
+        seed %% 1 != 0 || abs(seed) > .Machine$integer.max) {
+    stop("`seed` must be a single whole number (an integer), not ",
+         deparse(seed)[1], ".", call. = FALSE)
+  }
+  as.integer(seed)
+}

@@ -166,6 +166,15 @@ the first draft of that design silently resurrected excluded patients.
 - **A study being reproduced takes its `m` from that study's own saved
   output, never from the macro it called.** The macro cannot tell you; the log
   can.
+- **Every random draw runs inside `withr::with_seed()`, and a test enforces
+  it.** `tests/testthat/test-reproducibility.R` parses `R/` and fails on an
+  unseeded call. What the AVSD virtual-twins study measured (2026-10-07,
+  randomForestSRC 3.9.0, varPro 3.3.0): `mice(seed =)` seeds itself;
+  `randomForestSRC` wants a **negative** `seed =` and its unseeded inner
+  forests read R's RNG, so it needs the seed set as well; `varPro` reads R's
+  RNG even when given `seed =`; and `randomForestSRC` under OpenMP is not
+  run-to-run stable, so pin `options(rf.cores = 1L)` if it is ever added
+  here. None of the last three is a dependency yet.
 - **Filling an integer column returns a double.** The mean is rarely integral
   and R widens the column on assignment. This is correct and matches what
   `PROC STANDARD` writes, but it will surprise a caller comparing types.

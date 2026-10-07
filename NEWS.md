@@ -1,5 +1,18 @@
-# hvtiRimputation (unreleased)
+# hvtiRimputation 0.1.2
 
+* **`impute_multiple()` is now reproducible by default (breaking).** `seed`
+  is required, either as an argument or once per session through
+  `options(hvtiRimputation.seed = )`; with neither, the call fails. The old
+  default, `seed = NA`, left the draws to whatever state R's RNG happened to
+  be in. The `mice` call now runs under `withr::with_seed()` with the RNG kind
+  pinned to R's defaults, so the same seed gives the same imputations after
+  any `set.seed()` or `RNGkind()` change, and the caller's own random stream
+  is restored afterwards. A call that already passed a seed gets the same
+  values as before under R's default RNG kind. `withr` is a new import.
+* A new test parses `R/` and fails on any random call (`sample()`, `r*()`,
+  `mice`, `randomForestSRC`, `varPro`) outside `withr::with_seed()`, or a
+  `randomForestSRC` call without a negative `seed =`. It self-tests on a
+  planted violation.
 * Now requires R 4.4.0 or newer, up from 4.1.0, to match the rest of the
   HVTI family. `hvtiR::install()` installs the members together, and several
   already required 4.4.0, so on an older R the install failed whatever this
