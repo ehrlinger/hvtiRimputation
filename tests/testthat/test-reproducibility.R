@@ -39,7 +39,7 @@ test_that("a caller's non-default RNGkind() does not change the draws", {
 
   withr::local_preserve_seed()
   old <- RNGkind()
-  withr::defer(RNGkind(old[1], old[2], old[3]))
+  withr::defer(do.call(RNGkind, as.list(unname(old))))
   RNGkind("L'Ecuyer-CMRG", "Box-Muller", "Rejection")
   b <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
 
@@ -47,7 +47,10 @@ test_that("a caller's non-default RNGkind() does not change the draws", {
     imputed_data(a, imputation = "long"),
     imputed_data(b, imputation = "long")
   )
-  expect_identical(RNGkind(), c("L'Ecuyer-CMRG", "Box-Muller", "Rejection"))
+  # R-devel adds a fourth kind (binomial), so compare only the three this
+  # test set.
+  expect_identical(RNGkind()[1:3],
+                   c("L'Ecuyer-CMRG", "Box-Muller", "Rejection"))
 })
 
 test_that("impute_multiple() leaves the caller's random stream where it was", {
