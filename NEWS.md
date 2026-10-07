@@ -8,6 +8,9 @@
   width, set once in `vignettes/_quarto.yml`, with `pkgdown/extra.css` giving
   the pkgdown articles the same layout. `quarto` and `knitr` join `Suggests`.
 
+* `DESCRIPTION` now declares the Quarto command line tool in
+  `SystemRequirements`, which the new vignette needs to build.
+
 # hvtiRimputation 0.1.2
 
 * **`impute_multiple()` is now reproducible by default (breaking).** `seed`
