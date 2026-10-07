@@ -187,12 +187,12 @@ test_that("the audit catches an unseeded random call (self-test)", {
 })
 
 test_that("no function in the package makes an unseeded random call", {
-  # Parse R/ when the source tree is available (devtools::test()); under
-  # R CMD check only the installed package is, so audit its namespace.
-  src <- test_path("..", "..", "R")
-  if (dir.exists(src)) {
-    files <- list.files(src, pattern = "[.][Rr]$", full.names = TRUE)
-    expect_gt(length(files), 0L)
+  # Parse R/ when the source tree is available (devtools::test()). Under
+  # R CMD check or covr only the installed package is -- and covr's R/ holds
+  # the lazy-load database, not .R files -- so audit the namespace instead.
+  files <- list.files(test_path("..", "..", "R"), pattern = "[.][Rr]$",
+                      full.names = TRUE)
+  if (length(files) > 0L) {
     found <- unlist(lapply(files, function(f) {
       hits <- unseeded_random_calls(parse(f, keep.source = FALSE))
       if (length(hits)) paste0(basename(f), ": ", hits)
@@ -200,6 +200,7 @@ test_that("no function in the package makes an unseeded random call", {
   } else {
     ns <- asNamespace("hvtiRimputation")
     fns <- Filter(is.function, mget(ls(ns, all.names = TRUE), envir = ns))
+    expect_true("impute_multiple" %in% names(fns))
     found <- unlist(lapply(names(fns), function(nm) {
       hits <- unseeded_random_calls(body(fns[[nm]]))
       if (length(hits)) paste0(nm, ": ", hits)
