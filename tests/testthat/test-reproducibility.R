@@ -110,6 +110,11 @@ needs_seed_arg <- c("mice", "rfsrc", "rfsrc.fast", "impute", "impute.rfsrc",
                     "varpro")
 needs_negative_seed <- c("rfsrc", "rfsrc.fast", "impute", "impute.rfsrc")
 
+# randomForestSRC's seed must be written negated: `-abs(s)` or `-7`.
+is_negated <- function(x) {
+  is.call(x) && identical(x[[1]], as.name("-")) && length(x) == 2L
+}
+
 call_name <- function(e) {
   head <- e[[1]]
   if (is.symbol(head)) return(as.character(head))
@@ -131,9 +136,7 @@ unseeded_random_calls <- function(e, seeded = FALSE) {
       "not inside withr::with_seed()"
     } else if (nm %in% needs_seed_arg && is.null(seed_arg)) {
       "no `seed =` argument"
-    } else if (nm %in% needs_negative_seed &&
-                 !(is.call(seed_arg) && identical(seed_arg[[1]], as.name("-")) &&
-                     length(seed_arg) == 2L)) {
+    } else if (nm %in% needs_negative_seed && !is_negated(seed_arg)) {
       "randomForestSRC needs a negative seed, e.g. `seed = -abs(s)`"
     }
     if (!is.null(problem)) {
@@ -162,7 +165,7 @@ test_that("the audit catches an unseeded random call (self-test)", {
   )
   expect_match(
     flags(quote(function(d, s) {
-      withr::with_seed(s, randomForestSRC::impute(data = d, seed = s))
+      withr::with_seed(s, rfsrc(y ~ ., data = d, seed = s))
     })),
     "negative seed"
   )
@@ -173,8 +176,7 @@ test_that("the audit catches an unseeded random call (self-test)", {
   )
   expect_length(
     flags(quote(function(d, s) {
-      withr::with_seed(abs(s), randomForestSRC::impute(data = d,
-                                                        seed = -abs(s)))
+      withr::with_seed(abs(s), rfsrc(y ~ ., data = d, seed = -abs(s)))
     })),
     0L
   )
