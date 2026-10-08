@@ -12,7 +12,8 @@
 <link href="deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Missing Value Imputation for the HVTI CORR Group">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
+<meta property="og:title" content="Missing Value Imputation for the HVTI CORR Group">
 <meta name="description" content="Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the Cleveland Clinic CORR groups SAS library -- PROC STANDARD with REPLACE, and the imputsub' macro that wraps it. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.">
 <meta property="og:description" content="Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the Cleveland Clinic CORR groups SAS library -- PROC STANDARD with REPLACE, and the imputsub' macro that wraps it. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.">
 </head>
@@ -33,6 +34,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/index.html">Articles</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="news/index.html">Changelog</a></li>
       </ul>
@@ -283,6 +285,14 @@
 <p><strong>Inferred, pending validation.</strong> 518 more are settled only by the copy of the macro sitting in the calling study. That is strong evidence and not proof: which copy SAS loaded depends on the autocall path and <code>%include</code> order at run time. Reproducing one of these studies means confirming <code>m</code> against that study’s saved log <strong>first</strong>.</p>
 <p><strong>Not promised.</strong> Any general “reproduces the SAS corpus” guarantee. 129 of 939 calls cannot be attributed to a method from the code at all — 38 because the study’s own copies disagree with each other, and 91 because the calling study holds no copy and the corpus-wide definitions conflict.</p>
 <p>⚠️ That bound is a property of the corpus, not of this package, and no implementation choice lifts it. <strong>A study being reproduced takes its <code>m</code> from that study’s own saved output, never from the macro it called.</strong> The macro cannot tell you; the log can.</p>
+</div>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<ul>
+<li>
+<a href="https://ehrlinger.github.io/hvtiRimputation/articles/hvtiRimputation.html">Overview</a>, <code><a href="articles/hvtiRimputation.html">vignette("hvtiRimputation")</a></code>, takes eight synthetic rows through <code><a href="reference/impute_mean.html">impute_mean()</a></code> and shows how to read the record it returns, including the row-level columns.</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="related-packages">Related packages<a class="anchor" aria-label="anchor" href="#related-packages"></a>

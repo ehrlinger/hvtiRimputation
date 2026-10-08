@@ -211,6 +211,15 @@ implementation choice lifts it. **A study being reproduced takes its `m`
 from that study’s own saved output, never from the macro it called.**
 The macro cannot tell you; the log can.
 
+## Documentation
+
+- [Overview](https://ehrlinger.github.io/hvtiRimputation/articles/hvtiRimputation.html),
+  [`vignette("hvtiRimputation")`](https://ehrlinger.github.io/hvtiRimputation/articles/hvtiRimputation.md),
+  takes eight synthetic rows through
+  [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
+  and shows how to read the record it returns, including the row-level
+  columns.
+
 ## Related packages
 
 | Package | Relationship |

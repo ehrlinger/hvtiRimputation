@@ -66,6 +66,10 @@ not know, and a data frame with duplicated column names. Each of those
 produces a record that reads as authoritative and is wrong, and a wrong
 record is worse than a refusal because nothing downstream can detect it.
 
+The Overview vignette,
+[`vignette("hvtiRimputation")`](https://ehrlinger.github.io/hvtiRimputation/articles/hvtiRimputation.md),
+walks the workflow end to end.
+
 ## See also
 
 Useful links:
