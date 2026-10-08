@@ -13,3 +13,6 @@
 ^CLAUDE\.md$
 ^pkgdown-site$
 ^tools$
+^pkgdown$
+^vignettes/\.quarto$
+^vignettes/.*_files$
