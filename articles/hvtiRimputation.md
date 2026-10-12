@@ -82,7 +82,7 @@ out
 #>   method:  mean (m = 1)
 #>   rows:    8
 #>   imputed: 3 variable(s), 5 row(s) touched
-#>   produced by hvtiRimputation 0.1.2
+#>   produced by hvtiRimputation 0.1.3
 ```
 
 `vars` has no default. `PROC STANDARD` with no `VAR` statement processes
@@ -247,7 +247,7 @@ prov[c("method", "m", "vars", "cc_vars", "fill_values", "version")]
 #> 66.83333 28.13333 52.85714 
 #> 
 #> $version
-#> [1] "0.1.2"
+#> [1] "0.1.3"
 ```
 
 ## What it refuses
@@ -302,7 +302,7 @@ mi
 #>   m:       2 completed dataset(s) (maxit = 2)
 #>   rows:    8
 #>   imputed: 3 variable(s), 5 row(s) touched
-#>   produced by hvtiRimputation 0.1.2
+#>   produced by hvtiRimputation 0.1.3
 ```
 
 `m` and `seed` are both required. Copies of the SAS macros declare
