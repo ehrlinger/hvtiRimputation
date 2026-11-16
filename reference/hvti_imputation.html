@@ -86,9 +86,14 @@ Not derivable from the two above – a row can have a value filled and
 still be incomplete because a column outside <code>vars</code> is missing</p></dd>
 
 <dt><code>provenance</code></dt>
-<dd><p>method, <code>m</code>, the package version that produced it,
-and the seed where the method is stochastic, via
-<code><a href="imputation-accessors.html">imputation_provenance()</a></code></p></dd>
+<dd><p>how it was produced, via <code><a href="imputation-accessors.html">imputation_provenance()</a></code>.
+A named list that opens with the seven fields every hvtiR package
+records: <code>package</code>, <code>version</code>, <code>sha</code> (the commit, when the install
+recorded one), <code>method</code>, <code>seed</code>, <code>rng_kind</code> (the three <code><a href="https://rdrr.io/r/base/Random.html" class="external-link">RNGkind()</a></code>
+kinds) and <code>time</code>. Mean imputation draws nothing at random, so <code>seed</code>
+and <code>rng_kind</code> are <code>NA</code> here rather than a value that looks
+meaningful. Then this package's own: <code>m</code>, <code>vars</code>, <code>cc_vars</code>,
+<code>fill_values</code> and <code>n_row</code></p></dd>
 
 
 </dl><p>An imputed dataset that does not say how it was imputed cannot be

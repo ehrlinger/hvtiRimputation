@@ -103,8 +103,12 @@ input this function accepts.</p>
 <dd><p>row-level, after imputing</p></dd>
 
 <dt><code>provenance</code></dt>
-<dd><p>method (one per imputed variable), <code>m</code>, <code>maxit</code>,
-and the rest, via <code><a href="imputation-accessors.html">imputation_provenance()</a></code></p></dd>
+<dd><p>the seven fields every hvtiR package records
+(<code>package</code>, <code>version</code>, <code>sha</code>, <code>method</code>, <code>seed</code>, <code>rng_kind</code>, <code>time</code>;
+see <a href="hvti_imputation.html">hvti_imputation</a>), with <code>method</code> named by imputed variable and
+<code>rng_kind</code> the kinds the draws ran under. Then <code>m</code>, <code>maxit</code>, <code>vars</code>,
+<code>predictors</code>, <code>logged_events</code> (every event <code>mice</code> logged), <code>cc_vars</code>
+and <code>n_row</code>. Via <code><a href="imputation-accessors.html">imputation_provenance()</a></code></p></dd>
 
 
 </dl></div>

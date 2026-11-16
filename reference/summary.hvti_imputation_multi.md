@@ -3,9 +3,11 @@
 Reduces the record to a per-variable table: which method each variable
 was imputed with, and how many of its values were filled. Unlike
 [`summary.hvti_imputation()`](https://ehrlinger.github.io/hvtiRimputation/reference/summary.hvti_imputation.md),
-there is no single `fill_value` column – each of the `m` draws can fill
-a given cell with a different value, which is the entire point of
-multiple imputation, so no single value speaks for all of them.
+`fill_value` is always `NA`: each of the `m` draws can fill a given cell
+with a different value, which is the entire point of multiple
+imputation, so no single value speaks for all of them. The column is
+there, as a gap, so the two summaries have the same columns and bind
+with [`rbind()`](https://rdrr.io/r/base/cbind.html).
 
 ## Usage
 
@@ -27,8 +29,8 @@ summary(object, ...)
 ## Value
 
 A data frame with one row per imputed variable: the variable name, the
-method used, the number of values filled, and the proportion of rows
-that is.
+method used, the number of values filled, the proportion of rows that
+is, and `fill_value` (`NA`, see above).
 
 ## Examples
 
@@ -45,7 +47,7 @@ dat$grp[sample(n, 4)] <- NA
 out <- impute_multiple(dat, vars = c("age", "grp"), m = 2,
                        predictors = character(0), maxit = 2, seed = 1)
 summary(out)
-#>   variable  method n_imputed prop_imputed
-#> 1      age     pmm         4    0.1333333
-#> 2      grp polyreg         4    0.1333333
+#>   variable  method n_imputed prop_imputed fill_value
+#> 1      age     pmm         4    0.1333333         NA
+#> 2      grp polyreg         4    0.1333333         NA
 ```

@@ -72,17 +72,19 @@ particular row was filled.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data frame with one row per imputed variable: the variable name,
-the number of values filled, the proportion of rows that is, and the
-value used to fill them.</p>
+the method (<code>"mean"</code>), the number of values filled, the proportion of
+rows that is, and the value used to fill them. The columns are the
+ones <code><a href="summary.hvti_imputation_multi.html">summary.hvti_imputation_multi()</a></code> returns, where <code>fill_value</code> is
+<code>NA</code>, so the two tables bind with <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">60</span>, <span class="cn">NA</span>, <span class="fl">70</span><span class="op">)</span>, bmi <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fl">25</span>, <span class="fl">27</span>, <span class="fl">29</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="fu"><a href="impute_mean.html">impute_mean</a></span><span class="op">(</span><span class="va">dat</span>, vars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"bmi"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   variable n_imputed prop_imputed fill_value</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1      age         1         0.25         60</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2      bmi         1         0.25         27</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   variable method n_imputed prop_imputed fill_value</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1      age   mean         1         0.25         60</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      bmi   mean         1         0.25         27</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

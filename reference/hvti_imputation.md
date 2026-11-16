@@ -44,9 +44,15 @@ is for.
 
 - `provenance`:
 
-  method, `m`, the package version that produced it, and the seed where
-  the method is stochastic, via
-  [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
+  how it was produced, via
+  [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md).
+  A named list that opens with the seven fields every hvtiR package
+  records: `package`, `version`, `sha` (the commit, when the install
+  recorded one), `method`, `seed`, `rng_kind` (the three
+  [`RNGkind()`](https://rdrr.io/r/base/Random.html) kinds) and `time`.
+  Mean imputation draws nothing at random, so `seed` and `rng_kind` are
+  `NA` here rather than a value that looks meaningful. Then this
+  package's own: `m`, `vars`, `cc_vars`, `fill_values` and `n_row`
 
 An imputed dataset that does not say how it was imputed cannot be
 reproduced. The SAS corpus this package ports is the proof: thirty years

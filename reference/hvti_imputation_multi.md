@@ -61,5 +61,11 @@ a "yes" for any input this function accepts.
 
 - `provenance`:
 
-  method (one per imputed variable), `m`, `maxit`, and the rest, via
+  the seven fields every hvtiR package records (`package`, `version`,
+  `sha`, `method`, `seed`, `rng_kind`, `time`; see
+  [hvti_imputation](https://ehrlinger.github.io/hvtiRimputation/reference/hvti_imputation.md)),
+  with `method` named by imputed variable and `rng_kind` the kinds the
+  draws ran under. Then `m`, `maxit`, `vars`, `predictors`,
+  `logged_events` (every event `mice` logged), `cc_vars` and `n_row`.
+  Via
   [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)

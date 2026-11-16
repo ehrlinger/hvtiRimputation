@@ -127,10 +127,10 @@ answer that, though the matrix reduces to any count you need.
 ``` r
 
 summary(out)
-#>   variable n_imputed prop_imputed fill_value
-#> 1      age         2        0.250   66.83333
-#> 2      bmi         2        0.250   28.13333
-#> 3       ef         1        0.125   52.85714
+#>   variable method n_imputed prop_imputed fill_value
+#> 1      age   mean         2        0.250   66.83333
+#> 2      bmi   mean         2        0.250   28.13333
+#> 3       ef   mean         1        0.125   52.85714
 ```
 
 ## Which rows did imputation keep?
