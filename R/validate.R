@@ -8,12 +8,12 @@
 
 validate_data <- function(data) {
   if (!is.data.frame(data)) {
-    stop("`data` must be a data frame, not ", class(data)[1], ".",
-         call. = FALSE)
+    abort("`data` must be a data frame, not ", class(data)[1], ".",
+          call. = FALSE)
   }
   if (nrow(data) == 0L) {
-    stop("`data` has no rows, so there is nothing to impute from.",
-         call. = FALSE)
+    abort("`data` has no rows, so there is nothing to impute from.",
+          call. = FALSE)
   }
 
   # A duplicated column name makes the record ambiguous, and silently so.
@@ -23,11 +23,11 @@ validate_data <- function(data) {
   # thing this package's output has to survive.
   dup <- unique(names(data)[duplicated(names(data))])
   if (length(dup) > 0L) {
-    stop("`data` has more than one column named ", collapse_names(dup),
-         ". A duplicated name makes the imputation record ambiguous -- it ",
-         "cannot say which column a filled value came from. Rename the ",
-         "columns before imputing.",
-         call. = FALSE)
+    abort("`data` has more than one column named ", collapse_names(dup),
+          ". A duplicated name makes the imputation record ambiguous -- it ",
+          "cannot say which column a filled value came from. Rename the ",
+          "columns before imputing.",
+          call. = FALSE)
   }
   data
 }
@@ -44,7 +44,7 @@ validate_fill <- function(value, var) {
   if (length(value) != 1L || !is.finite(value)) {
     what <- if (is.nan(value)) "NaN" else if (is.na(value)) "NA" else
       paste0("`", format(value), "`")
-    stop(
+    abort(
       "the mean of `", var, "` is ", what, ", which cannot be used as a fill ",
       "value. This usually means the column holds non-finite values (`Inf`, ",
       "`-Inf`, `NaN`), whose mean is not a number. Filling with it would ",
@@ -58,34 +58,34 @@ validate_fill <- function(value, var) {
 
 validate_vars <- function(data, vars, arg, numeric_only = TRUE) {
   if (!is.character(vars) || anyNA(vars)) {
-    stop("`", arg, "` must be a character vector of column names.",
-         call. = FALSE)
+    abort("`", arg, "` must be a character vector of column names.",
+          call. = FALSE)
   }
   if (length(vars) == 0L) {
-    stop("`", arg, "` is empty. Name the columns explicitly; this function ",
-         "will not choose them for you.", call. = FALSE)
+    abort("`", arg, "` is empty. Name the columns explicitly; this function ",
+          "will not choose them for you.", call. = FALSE)
   }
   if (anyDuplicated(vars)) {
-    stop("`", arg, "` names ", collapse_names(unique(vars[duplicated(vars)])),
-         " more than once.", call. = FALSE)
+    abort("`", arg, "` names ", collapse_names(unique(vars[duplicated(vars)])),
+          " more than once.", call. = FALSE)
   }
 
   unknown <- setdiff(vars, names(data))
   if (length(unknown) > 0L) {
-    stop("`", arg, "` names ", collapse_names(unknown),
-         ", which ", plural(unknown, "is", "are"), " not in `data`.",
-         call. = FALSE)
+    abort("`", arg, "` names ", collapse_names(unknown),
+          ", which ", plural(unknown, "is", "are"), " not in `data`.",
+          call. = FALSE)
   }
 
   if (numeric_only) {
     not_numeric <- vars[!vapply(data[vars], is.numeric, logical(1))]
     if (length(not_numeric) > 0L) {
-      stop("mean imputation needs numeric variables, and ",
-           collapse_names(not_numeric), " ",
-           plural(not_numeric, "is", "are"), " not numeric. ",
-           "A mean of a factor or a character column is not defined, and ",
-           "guessing one here would be a method choice made silently.",
-           call. = FALSE)
+      abort("mean imputation needs numeric variables, and ",
+            collapse_names(not_numeric), " ",
+            plural(not_numeric, "is", "are"), " not numeric. ",
+            "A mean of a factor or a character column is not defined, and ",
+            "guessing one here would be a method choice made silently.",
+            call. = FALSE)
     }
 
     # `is.numeric()` is necessary and not sufficient. A classed numeric --
@@ -100,14 +100,14 @@ validate_vars <- function(data, vars, arg, numeric_only = TRUE) {
                            logical(1))]
     if (length(classed) > 0L) {
       cls <- vapply(data[classed], function(x) oldClass(x)[1], character(1))
-      stop("mean imputation needs plain numeric variables, and ",
-           paste0("`", classed, "` is <", cls, ">", collapse = ", "),
-           ". A classed numeric passes `is.numeric()` while carrying storage ",
-           "rules this function does not know, and imputing it silently ",
-           "corrupts both the data and the provenance. Convert it yourself ",
-           "-- `as.numeric()` for integer64 -- so the conversion is a choice ",
-           "you made rather than one made for you.",
-           call. = FALSE)
+      abort("mean imputation needs plain numeric variables, and ",
+            paste0("`", classed, "` is <", cls, ">", collapse = ", "),
+            ". A classed numeric passes `is.numeric()` while carrying storage ",
+            "rules this function does not know, and imputing it silently ",
+            "corrupts both the data and the provenance. Convert it yourself ",
+            "-- `as.numeric()` for integer64 -- so the conversion is a choice ",
+            "you made rather than one made for you.",
+            call. = FALSE)
     }
   }
 
@@ -135,7 +135,7 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
 
   is_character <- vars[vapply(data[vars], is.character, logical(1))]
   if (length(is_character) > 0L) {
-    stop(
+    abort(
       "`", arg, "` names ", collapse_names(is_character), ", which ",
       plural(is_character, "is", "are"), " still character. ",
       "impute_multiple() does not decide what a category's levels are -- ",
@@ -148,7 +148,7 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
   unsupported <- vars[!vapply(data[vars], is_mice_class, logical(1))]
   if (length(unsupported) > 0L) {
     cls <- vapply(data[unsupported], function(x) oldClass(x)[1], character(1))
-    stop(
+    abort(
       "mice has no documented imputation method for ",
       paste0("`", unsupported, "` <", cls, ">", collapse = ", "), ". ",
       "Supported column classes are plain numeric, factor and logical; a ",
@@ -165,7 +165,7 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
   all_missing <- vars[vapply(data[vars], function(x) all(is.na(x)),
                              logical(1))]
   if (length(all_missing) > 0L) {
-    stop(
+    abort(
       "`", arg, "` names ", collapse_names(all_missing), ", which ",
       plural(all_missing, "is", "are"), " missing for every row, so there ",
       "is nothing to model ", plural(all_missing, "it", "them"), " from. ",
@@ -179,7 +179,7 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
   # is left, fails with "No predictors were left after their removal".
   constant <- vars[vapply(data[vars], is_constant, logical(1))]
   if (length(constant) > 0L) {
-    stop(
+    abort(
       "`", arg, "` names ", collapse_names(constant), ", which ",
       plural(constant, "takes", "take"), " a single observed value. mice ",
       "removes a constant column before imputing, so its missing values ",
@@ -212,57 +212,57 @@ is_mice_class <- function(x) {
 # record.
 validate_predictors <- function(data, predictors, vars) {
   if (!is.character(predictors) || anyNA(predictors)) {
-    stop("`predictors` must be a character vector of column names, or ",
-         "character(0) for an imputation that no column outside `vars` ",
-         "informs.", call. = FALSE)
+    abort("`predictors` must be a character vector of column names, or ",
+          "character(0) for an imputation that no column outside `vars` ",
+          "informs.", call. = FALSE)
   }
   if (length(predictors) == 0L) return(character(0))
   predictors <- validate_vars(data, predictors, arg = "predictors",
                               numeric_only = FALSE)
   both <- intersect(predictors, vars)
   if (length(both) > 0L) {
-    stop("`predictors` and `vars` both name ", collapse_names(both), ". A ",
-         "column in `vars` already informs the other imputations; ",
-         "`predictors` is for columns that inform them without being ",
-         "imputed. Name each column in one or the other.", call. = FALSE)
+    abort("`predictors` and `vars` both name ", collapse_names(both), ". A ",
+          "column in `vars` already informs the other imputations; ",
+          "`predictors` is for columns that inform them without being ",
+          "imputed. Name each column in one or the other.", call. = FALSE)
   }
 
   is_character <- predictors[vapply(data[predictors], is.character,
                                     logical(1))]
   if (length(is_character) > 0L) {
-    stop("`predictors` names ", collapse_names(is_character), ", which ",
-         plural(is_character, "is", "are"), " still character. Convert ",
-         "with factor() first, so the levels are a choice you made.",
-         call. = FALSE)
+    abort("`predictors` names ", collapse_names(is_character), ", which ",
+          plural(is_character, "is", "are"), " still character. Convert ",
+          "with factor() first, so the levels are a choice you made.",
+          call. = FALSE)
   }
   unsupported <- predictors[!vapply(data[predictors], is_mice_class,
                                     logical(1))]
   if (length(unsupported) > 0L) {
     cls <- vapply(data[unsupported], function(x) oldClass(x)[1], character(1))
-    stop("`predictors` names ",
-         paste0("`", unsupported, "` <", cls, ">", collapse = ", "),
-         ". A predictor must be plain numeric, factor or logical. A date ",
-         "would enter the model as days since 1970, which is rarely the ",
-         "quantity you mean; derive the number you do mean (years since ",
-         "surgery, say) and pass that.", call. = FALSE)
+    abort("`predictors` names ",
+          paste0("`", unsupported, "` <", cls, ">", collapse = ", "),
+          ". A predictor must be plain numeric, factor or logical. A date ",
+          "would enter the model as days since 1970, which is rarely the ",
+          "quantity you mean; derive the number you do mean (years since ",
+          "surgery, say) and pass that.", call. = FALSE)
   }
 
   incomplete <- predictors[vapply(data[predictors], anyNA, logical(1))]
   if (length(incomplete) > 0L) {
-    stop("`predictors` names ", collapse_names(incomplete), ", which ",
-         plural(incomplete, "has", "have"), " missing values. A predictor ",
-         "is not imputed, so it must be fully observed. Move ",
-         plural(incomplete, "it", "them"), " to `vars` to have ",
-         plural(incomplete, "it", "them"), " imputed and informing the ",
-         "others at the same time.", call. = FALSE)
+    abort("`predictors` names ", collapse_names(incomplete), ", which ",
+          plural(incomplete, "has", "have"), " missing values. A predictor ",
+          "is not imputed, so it must be fully observed. Move ",
+          plural(incomplete, "it", "them"), " to `vars` to have ",
+          plural(incomplete, "it", "them"), " imputed and informing the ",
+          "others at the same time.", call. = FALSE)
   }
 
   constant <- predictors[vapply(data[predictors], is_constant, logical(1))]
   if (length(constant) > 0L) {
-    stop("`predictors` names ", collapse_names(constant), ", which ",
-         plural(constant, "takes", "take"), " a single value. A constant ",
-         "carries no information to inform the draws, and mice would drop ",
-         plural(constant, "it", "them"), " silently.", call. = FALSE)
+    abort("`predictors` names ", collapse_names(constant), ", which ",
+          plural(constant, "takes", "take"), " a single value. A constant ",
+          "carries no information to inform the draws, and mice would drop ",
+          plural(constant, "it", "them"), " silently.", call. = FALSE)
   }
 
   warn_id_like(data, predictors, "predictors")
@@ -304,8 +304,8 @@ warn_id_like <- function(data, cols, arg) {
 # for.
 validate_m <- function(m) {
   if (!is_count(m)) {
-    stop("`m` must be a single positive whole number. impute_multiple() ",
-         "will not choose it for you.", call. = FALSE)
+    abort("`m` must be a single positive whole number. impute_multiple() ",
+          "will not choose it for you.", call. = FALSE)
   }
   as.integer(m)
 }
@@ -318,9 +318,9 @@ validate_m <- function(m) {
 # asked for.
 validate_maxit <- function(maxit) {
   if (!is_count(maxit)) {
-    stop("`maxit` must be a single positive whole number, the number of ",
-         "chained-equations iterations, not ", deparse(maxit)[1], ".",
-         call. = FALSE)
+    abort("`maxit` must be a single positive whole number, the number of ",
+          "chained-equations iterations, not ", deparse(maxit)[1], ".",
+          call. = FALSE)
   }
   as.integer(maxit)
 }
@@ -337,15 +337,15 @@ is_count <- function(x) {
 # leave the result hostage to whatever R's RNG state happened to be.
 validate_seed <- function(seed) {
   if (is.null(seed)) {
-    stop("`seed` is required. Pass `seed =`, or set ",
-         "options(hvtiRimputation.seed = <whole number>) once for the ",
-         "session. impute_multiple() will not draw from an unseeded RNG, ",
-         "because the result could not be reproduced.", call. = FALSE)
+    abort("`seed` is required. Pass `seed =`, or set ",
+          "options(hvtiRimputation.seed = <whole number>) once for the ",
+          "session. impute_multiple() will not draw from an unseeded RNG, ",
+          "because the result could not be reproduced.", call. = FALSE)
   }
   if (!is.numeric(seed) || length(seed) != 1L || !is.finite(seed) ||
         seed %% 1 != 0 || abs(seed) > .Machine$integer.max) {
-    stop("`seed` must be a single whole number (an integer), not ",
-         deparse(seed)[1], ".", call. = FALSE)
+    abort("`seed` must be a single whole number (an integer), not ",
+          deparse(seed)[1], ".", call. = FALSE)
   }
   as.integer(seed)
 }

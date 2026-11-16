@@ -13,8 +13,10 @@
 }
 \value{
 A data frame with one row per imputed variable: the variable name,
-the number of values filled, the proportion of rows that is, and the
-value used to fill them.
+the method (\code{"mean"}), the number of values filled, the proportion of
+rows that is, and the value used to fill them. The first four columns
+are the ones \code{\link[=summary.hvti_imputation_multi]{summary.hvti_imputation_multi()}} returns, so the two
+tables bind together; \code{fill_value} is the one this method adds.
 }
 \description{
 Reduces the record to a per-variable table. It is a view of

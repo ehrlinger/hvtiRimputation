@@ -199,7 +199,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   # validate_data() already refuses for a duplicated column name generally.
   reserved <- intersect(c(".imp", ".id"), names(data))
   if (length(reserved) > 0L) {
-    stop(
+    abort(
       "`data` has a column named ", collapse_names(reserved), ", which ",
       plural(reserved, "is", "are"),
       " reserved by impute_multiple() for the long-format draw index and ",
@@ -231,7 +231,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   }
   predictors <- validate_predictors(data, predictors, vars)
   if (length(vars) + length(predictors) < 2L) {
-    stop(
+    abort(
       "impute_multiple() needs at least two columns between `vars` and ",
       "`predictors`. mice::mice() fits chained equations, so the imputed ",
       "variable needs another column to condition on, and with one column ",
@@ -268,7 +268,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   method_vec[predictors] <- ""
   if (!is.null(method)) {
     if (!is.character(method) || anyNA(method)) {
-      stop(
+      abort(
         "`method` must be a named character vector (or NULL), not ",
         class(method)[1], ".",
         call. = FALSE
@@ -276,7 +276,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     }
     if (is.null(names(method)) || anyNA(names(method)) ||
           any(names(method) == "")) {
-      stop(
+      abort(
         "`method` must be a named character vector, naming the columns to ",
         "override -- there is no single method applied to every column. ",
         "Every column not named here keeps mice's own default; see ",
@@ -286,13 +286,13 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     }
     dup <- unique(names(method)[duplicated(names(method))])
     if (length(dup) > 0L) {
-      stop("`method` names ", collapse_names(dup), " more than once.",
-           call. = FALSE)
+      abort("`method` names ", collapse_names(dup), " more than once.",
+            call. = FALSE)
     }
     unknown <- setdiff(names(method), vars)
     if (length(unknown) > 0L) {
-      stop("`method` names ", collapse_names(unknown), ", which ",
-           plural(unknown, "is", "are"), " not in `vars`.", call. = FALSE)
+      abort("`method` names ", collapse_names(unknown), ", which ",
+            plural(unknown, "is", "are"), " not in `vars`.", call. = FALSE)
     }
     method_vec[names(method)] <- method
   }
@@ -301,15 +301,16 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   # the caller's global RNG. with_seed() sets the same seed under a pinned
   # RNG kind, so a caller who changed RNGkind() still gets the same draws,
   # and restores the caller's RNG state afterwards.
+  rng_kind <- c("Mersenne-Twister", "Inversion", "Rejection")
   mice_fit <- withr::with_seed(
     seed,
     mice::mice(
       imp_input, m = m, maxit = maxit, method = method_vec,
       seed = seed, printFlag = FALSE
     ),
-    .rng_kind = "Mersenne-Twister",
-    .rng_normal_kind = "Inversion",
-    .rng_sample_kind = "Rejection"
+    .rng_kind = rng_kind[[1]],
+    .rng_normal_kind = rng_kind[[2]],
+    .rng_sample_kind = rng_kind[[3]]
   )
 
   completed <- mice::complete(mice_fit, "long")
@@ -328,7 +329,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     if (!is.logical(raw)) {
       bad <- !is.na(raw) & !(raw %in% c(0, 1))
       if (any(bad)) {
-        stop(
+        abort(
           "`", v, "` is a logical column, but the method used for it (`",
           method_vec[[v]], "`) returned ", format(raw[bad][1]), ", which ",
           "is not 0 or 1. Coercing that to logical would silently map ",
@@ -373,22 +374,22 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
       "constant (its observed values do not vary)",
       paste0(dropped[explained], " with other columns in the model")
     )
-    stop(
+    abort(
       "mice removed ",
       paste0("`", explained, "` as ", reason, collapse = "; "),
       " before imputing, so its missing values were never filled. Drop ",
       plural(explained, "it", "them"), " from `vars`. A constant column ",
       "can be filled with its one observed value by hand; a collinear one ",
       "is better left out, or replaced by the column it duplicates.",
-      call. = FALSE
+      class = "unfilled", call. = FALSE
     )
   }
   if (length(still_missing) > 0L) {
-    stop(
+    abort(
       "`", paste(still_missing, collapse = "`, `"), "` still has missing ",
       "values after imputation, so the record would claim a fill that did ",
       "not happen. This is a bug in hvtiRimputation; please report it.",
-      call. = FALSE
+      class = "unfilled", call. = FALSE
     )
   }
 
@@ -417,19 +418,19 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     matrix = record,
     complete_case_pass = cc_pre,
     analysis_pass = cc_post,
-    provenance = list(
-      method = method_vec[vars],
-      m = m,
-      maxit = maxit,
-      vars = vars,
-      predictors = predictors,
-      logged_events = logged_events(mice_fit),
-      cc_vars = cc_vars,
-      n_row = nrow(data),
-      package = "hvtiRimputation",
-      version = as.character(utils::packageVersion("hvtiRimputation")),
-      seed = seed,
-      time = Sys.time()
+    provenance = c(
+      provenance_record(
+        method = method_vec[vars], seed = seed, rng_kind = rng_kind
+      ),
+      list(
+        m = m,
+        maxit = maxit,
+        vars = vars,
+        predictors = predictors,
+        logged_events = logged_events(mice_fit),
+        cc_vars = cc_vars,
+        n_row = nrow(data)
+      )
     )
   )
 }

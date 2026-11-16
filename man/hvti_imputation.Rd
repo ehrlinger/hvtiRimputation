@@ -34,9 +34,14 @@ listwise deletion? Read from the input, before anything was filled}
 \item{\code{analysis_pass}}{row-level: is this row complete \emph{after} imputing?
 Not derivable from the two above -- a row can have a value filled and
 still be incomplete because a column outside \code{vars} is missing}
-\item{\code{provenance}}{method, \code{m}, the package version that produced it,
-and the seed where the method is stochastic, via
-\code{\link[=imputation_provenance]{imputation_provenance()}}}
+\item{\code{provenance}}{how it was produced, via \code{\link[=imputation_provenance]{imputation_provenance()}}.
+A named list that opens with the seven fields every hvtiR package
+records: \code{package}, \code{version}, \code{sha} (the commit, when the install
+recorded one), \code{method}, \code{seed}, \code{rng_kind} (the three \code{\link[=RNGkind]{RNGkind()}}
+kinds) and \code{time}. Mean imputation draws nothing at random, so \code{seed}
+and \code{rng_kind} are \code{NA} here rather than a value that looks
+meaningful. Then this package's own: \code{m}, \code{vars}, \code{cc_vars},
+\code{fill_values} and \code{n_row}}
 }
 
 An imputed dataset that does not say how it was imputed cannot be

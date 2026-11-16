@@ -92,7 +92,7 @@ impute_mean <- function(data, vars, cc_vars = names(data)) {
   for (v in vars) {
     missing <- is.na(data[[v]])
     if (all(missing)) {
-      stop(
+      abort(
         "`", v, "` is missing for every row, so it has no mean to impute ",
         "from. Drop the variable or supply the fill value yourself; this ",
         "function will not leave it as NA and call it imputed.",
@@ -112,11 +112,11 @@ impute_mean <- function(data, vars, cc_vars = names(data)) {
     # is NA or NaN writes a missing value into a cell the record marks TRUE,
     # which is precisely the lie the record exists to make impossible.
     if (anyNA(data[[v]])) {
-      stop(
+      abort(
         "`", v, "` still has missing values after imputation, so the record ",
         "would claim a fill that did not happen. This is a bug in ",
         "hvtiRimputation; please report it.",
-        call. = FALSE
+        class = "unfilled", call. = FALSE
       )
     }
   }
@@ -143,17 +143,17 @@ impute_mean <- function(data, vars, cc_vars = names(data)) {
     matrix = record,
     complete_case_pass = cc_pre,
     analysis_pass = cc_post,
-    provenance = list(
-      method = "mean",
-      m = 1L,
-      vars = vars,
-      cc_vars = cc_vars,
-      fill_values = fill,
-      n_row = nrow(data),
-      package = "hvtiRimputation",
-      version = as.character(utils::packageVersion("hvtiRimputation")),
-      seed = NA_integer_,
-      time = Sys.time()
+    # No random draw, so seed and rng_kind are NA rather than whatever R's
+    # generator happened to hold.
+    provenance = c(
+      provenance_record(method = "mean"),
+      list(
+        m = 1L,
+        vars = vars,
+        cc_vars = cc_vars,
+        fill_values = fill,
+        n_row = nrow(data)
+      )
     )
   )
 }

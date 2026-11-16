@@ -41,8 +41,12 @@
 #'   \item{`matrix`}{the logical record, via [imputed_matrix()]}
 #'   \item{`complete_case_pass`}{row-level, read from the input}
 #'   \item{`analysis_pass`}{row-level, after imputing}
-#'   \item{`provenance`}{method (one per imputed variable), `m`, `maxit`,
-#'     and the rest, via [imputation_provenance()]}
+#'   \item{`provenance`}{the seven fields every hvtiR package records
+#'     (`package`, `version`, `sha`, `method`, `seed`, `rng_kind`, `time`;
+#'     see [hvti_imputation]), with `method` named by imputed variable and
+#'     `rng_kind` the kinds the draws ran under. Then `m`, `maxit`, `vars`,
+#'     `predictors`, `logged_events` (every event `mice` logged), `cc_vars`
+#'     and `n_row`. Via [imputation_provenance()]}
 #' }
 #'
 #' @name hvti_imputation_multi
@@ -74,7 +78,7 @@ new_hvti_imputation_multi <- function(data_long, matrix, complete_case_pass,
 imputed_data.hvti_imputation_multi <- function(x, imputation, ...) {
   m <- x$provenance$m
   if (missing(imputation)) {
-    stop(
+    abort(
       "`imputation` is required: pass an integer in 1:", m, " for one ",
       "completed dataset, or \"long\" for all ", m, " stacked together. ",
       "There is no default here on purpose -- averaging the completed ",
@@ -89,8 +93,8 @@ imputed_data.hvti_imputation_multi <- function(x, imputation, ...) {
   }
   if (!is.numeric(imputation) || length(imputation) != 1L ||
         is.na(imputation) || !imputation %in% seq_len(m)) {
-    stop("`imputation` must be \"long\", or a single integer in 1:", m, ".",
-         call. = FALSE)
+    abort("`imputation` must be \"long\", or a single integer in 1:", m, ".",
+          call. = FALSE)
   }
   out <- x$data_long[x$data_long$.imp == imputation, , drop = FALSE]
   out[[".imp"]] <- NULL

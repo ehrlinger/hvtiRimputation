@@ -27,9 +27,14 @@
 #'   \item{`analysis_pass`}{row-level: is this row complete *after* imputing?
 #'     Not derivable from the two above -- a row can have a value filled and
 #'     still be incomplete because a column outside `vars` is missing}
-#'   \item{`provenance`}{method, `m`, the package version that produced it,
-#'     and the seed where the method is stochastic, via
-#'     [imputation_provenance()]}
+#'   \item{`provenance`}{how it was produced, via [imputation_provenance()].
+#'     A named list that opens with the seven fields every hvtiR package
+#'     records: `package`, `version`, `sha` (the commit, when the install
+#'     recorded one), `method`, `seed`, `rng_kind` (the three [RNGkind()]
+#'     kinds) and `time`. Mean imputation draws nothing at random, so `seed`
+#'     and `rng_kind` are `NA` here rather than a value that looks
+#'     meaningful. Then this package's own: `m`, `vars`, `cc_vars`,
+#'     `fill_values` and `n_row`}
 #' }
 #'
 #' An imputed dataset that does not say how it was imputed cannot be
@@ -117,9 +122,9 @@ NULL
 # only imputed_data()'s contract genuinely differs by class.
 .stopifnot_hvti_imputation <- function(x) {
   if (!inherits(x, c("hvti_imputation", "hvti_imputation_multi"))) {
-    stop("`x` must be the result of impute_mean() or impute_multiple() ",
-         "(class `hvti_imputation` or `hvti_imputation_multi`), not ",
-         class(x)[1], ".", call. = FALSE)
+    abort("`x` must be the result of impute_mean() or impute_multiple() ",
+          "(class `hvti_imputation` or `hvti_imputation_multi`), not ",
+          class(x)[1], ".", call. = FALSE)
   }
   invisible(x)
 }
@@ -137,8 +142,8 @@ imputed_data.hvti_imputation <- function(x, ...) {
 
 #' @export
 imputed_data.default <- function(x, ...) {
-  stop("`x` must be an object of class `hvti_imputation` or ",
-       "`hvti_imputation_multi`, not ", class(x)[1], ".", call. = FALSE)
+  abort("`x` must be an object of class `hvti_imputation` or ",
+        "`hvti_imputation_multi`, not ", class(x)[1], ".", call. = FALSE)
 }
 
 #' @rdname imputation-accessors
@@ -219,7 +224,7 @@ imputation_provenance <- function(x) {
 imputation_indicators <- function(x, prefix = "imputed_") {
   .stopifnot_hvti_imputation(x)
   if (!is.character(prefix) || length(prefix) != 1L || is.na(prefix)) {
-    stop("`prefix` must be a single string.", call. = FALSE)
+    abort("`prefix` must be a single string.", call. = FALSE)
   }
   out <- as.data.frame(x$matrix)
   names(out) <- paste0(prefix, colnames(x$matrix))
@@ -248,8 +253,10 @@ print.hvti_imputation <- function(x, ...) {
 #' @param ... Ignored.
 #'
 #' @return A data frame with one row per imputed variable: the variable name,
-#'   the number of values filled, the proportion of rows that is, and the
-#'   value used to fill them.
+#'   the method (`"mean"`), the number of values filled, the proportion of
+#'   rows that is, and the value used to fill them. The first four columns
+#'   are the ones [summary.hvti_imputation_multi()] returns, so the two
+#'   tables bind together; `fill_value` is the one this method adds.
 #'
 #' @examples
 #' dat <- data.frame(age = c(50, 60, NA, 70), bmi = c(NA, 25, 27, 29))
@@ -259,6 +266,7 @@ summary.hvti_imputation <- function(object, ...) {
   n_imputed <- colSums(object$matrix)
   data.frame(
     variable = colnames(object$matrix),
+    method = object$provenance$method,
     n_imputed = as.integer(n_imputed),
     prop_imputed = unname(n_imputed / nrow(object$matrix)),
     fill_value = unname(object$provenance$fill_values[colnames(object$matrix)]),
