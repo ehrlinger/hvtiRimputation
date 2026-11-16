@@ -29,5 +29,10 @@
 * The accessors refuse a non-imputation object with a message naming what
   they expected, instead of a bare `stopifnot()` failure.
 
-* `predictors` is the fourth formal of `impute_multiple()`, so a call that
-  passed `cc_vars` by position now passes it as `predictors`. Name `cc_vars`.
+* `predictors` is the last formal of `impute_multiple()`, so a call written
+  before it existed keeps its positional meaning. One variable in `vars` is
+  enough when `predictors` supplies a second column. A predictor `mice` drops
+  from a single model (linearly dependent among the rows where that model's
+  target is observed) draws a warning naming the column, the target and the
+  number of fits, and every event `mice` logged is kept in the provenance as
+  `logged_events`.

@@ -487,3 +487,57 @@ test_that("a predictor mice drops draws a warning", {
     class = "hvtiRimputation_predictor_dropped"
   )
 })
+
+# Review of #23 (head 45e47e5) ------------------------------------------------
+
+test_that("an old positional call still reads its 4th argument as cc_vars", {
+  dat <- outcome_fixture()
+  rm(list = ls(.hvti_state), envir = .hvti_state)
+  withr::defer(rm(list = ls(.hvti_state), envir = .hvti_state))
+
+  # Before `predictors` existed, the 4th positional argument was `cc_vars`.
+  expect_warning(
+    old <- impute_multiple(dat, c("x", "z"), 2, "y", maxit = 1),
+    class = "hvtiRimputation_deprecated"
+  )
+  expect_identical(imputation_provenance(old)$cc_vars, "y")
+  expect_identical(imputation_provenance(old)$predictors, character(0))
+  expect_identical(complete_case_pass(old), rep(TRUE, nrow(dat)))
+})
+
+test_that("one imputed variable is fine when a predictor is the 2nd column", {
+  dat <- outcome_fixture()
+  out <- impute_multiple(dat, vars = "x", m = 2, predictors = "y", maxit = 2)
+  expect_false(anyNA(imputed_data(out, imputation = 1)$x))
+  expect_identical(colnames(imputed_matrix(out)), "x")
+
+  expect_error(
+    impute_multiple(dat, vars = "x", m = 1, predictors = character(0),
+                    maxit = 1),
+    "at least two columns between `vars` and `predictors`"
+  )
+})
+
+test_that("a predictor dropped inside one model is reported, with target", {
+  dat <- outcome_fixture()
+  # z2 equals y wherever x is observed, so the model for x finds the two
+  # linearly dependent and drops z2 -- a dependence that exists only in the
+  # observed subset, and is logged under pmm rather than at initialisation.
+  dat$z2 <- dat$y
+  dat$z2[1:20] <- dat$y[1:20] + 1
+  expect_warning(
+    out <- suppressWarnings(
+      impute_multiple(dat, vars = "x", m = 2, predictors = c("y", "z2"),
+                      maxit = 2),
+      classes = "simpleWarning"
+    ),
+    "`(y|z2)` from the model for `x` in 4 of 4 fits",
+    class = "hvtiRimputation_predictor_dropped"
+  )
+  ev <- imputation_provenance(out)$logged_events
+  expect_s3_class(ev, "data.frame")
+  # Which of the two dependent columns mice drops is its choice; that one
+  # of them is dropped from x's model in every fit is the point.
+  expect_identical(nrow(ev), 4L)
+  expect_true(all(ev$out %in% c("y", "z2") & ev$dep == "x"))
+})

@@ -8,11 +8,11 @@ impute_multiple(
   data,
   vars,
   m,
-  predictors,
   cc_vars = names(data),
   method = NULL,
   maxit = 5L,
-  seed = getOption("hvtiRimputation.seed")
+  seed = getOption("hvtiRimputation.seed"),
+  predictors
 )
 }
 \arguments{
@@ -25,16 +25,6 @@ default} -- see Divergences.}
 default} -- for the same reason \code{vars} has none in \code{\link[=impute_mean]{impute_mean()}}: the
 SAS corpus's \code{NIMPUTE} defaults disagree across macro copies, so there
 is no single "the default" to inherit.}
-
-\item{predictors}{Character vector of columns that inform the
-imputation without being imputed: they enter the \code{mice} data and its
-predictor matrix, and their values are never changed. \strong{Required, with
-no default}; \code{character(0)} is the explicit choice of an imputation
-that no column outside \code{vars} informs. For an association analysis this
-is where the outcome goes (time and status, for a survival outcome);
-see Details for why. Each column must be fully observed, plain numeric,
-factor or logical, and not also in \code{vars}. Omitting the argument runs
-as \code{character(0)} with a deprecation warning, for this release only.}
 
 \item{cc_vars}{Character vector of columns over which \code{complete_case_pass}
 is evaluated, defaulting to every column of \code{data}. This is the listwise
@@ -54,6 +44,16 @@ session through \code{options(hvtiRimputation.seed = )}, which is where the
 default reads it from. With neither, the call fails rather than drawing
 from an unseeded RNG. Passed to \code{mice::mice()} and recorded in
 \code{\link[=imputation_provenance]{imputation_provenance()}}.}
+
+\item{predictors}{Character vector of columns that inform the
+imputation without being imputed: they enter the \code{mice} data and its
+predictor matrix, and their values are never changed. \strong{Required, with
+no default}; \code{character(0)} is the explicit choice of an imputation
+that no column outside \code{vars} informs. For an association analysis this
+is where the outcome goes (time and status, for a survival outcome);
+see Details for why. Each column must be fully observed, plain numeric,
+factor or logical, and not also in \code{vars}. Omitting the argument runs
+as \code{character(0)} with a deprecation warning, for this release only.}
 }
 \value{
 An object of class \code{hvti_imputation_multi}.
@@ -144,10 +144,12 @@ macro copy in the corpus this package ports. Neither default is
 inherited here, for the reason recorded in \code{impute_mean()}'s own
 Divergences section.
 
-\strong{\code{vars} needs at least two columns.} \code{mice::mice()} fits chained
-equations, so a single column has no other column to condition on --
-passing one fails inside \code{mice} with no context. This function checks
-for it and refuses with an explanation instead.
+\strong{\code{vars} and \code{predictors} need at least two columns between them.}
+\code{mice::mice()} fits chained equations, so a single column has no other
+column to condition on, and passing one fails inside \code{mice} with no
+context. One imputed variable is fine when a predictor (the outcome,
+say) supplies the second column. This function checks for it and
+refuses with an explanation instead.
 
 \strong{Columns \code{mice} drops are reported, not hidden.} \code{mice} quietly
 removes a column that is constant or collinear with another before it
@@ -155,7 +157,14 @@ imputes anything, and records the removal in its \code{loggedEvents}. If it
 removed one of \code{vars}, that column comes back still missing, and this
 function refuses with the reason \code{mice} logged. If it removed one of
 \code{predictors}, the imputation ran without it, and this function warns,
-because the column you named to inform the draws did not.
+because the column you named to inform the draws did not. \code{mice} also
+drops a predictor from a single model when it is linearly dependent on
+the others among the rows where that model's target is observed, a
+dependence that need not hold in the full data. That is logged against
+the imputation method rather than as \code{"collinear"}, and this function
+warns for it too, naming the column, the target and how many of the
+\code{maxit} x \code{m} fits lost it. Every event \code{mice} logged is kept in the
+provenance as \code{logged_events}.
 
 \strong{\code{data} cannot use \code{.imp} or \code{.id} as column names.} Both are reserved
 for the long-format draw index and row identifier this function adds.

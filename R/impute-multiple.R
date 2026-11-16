@@ -112,10 +112,12 @@
 #' inherited here, for the reason recorded in `impute_mean()`'s own
 #' Divergences section.
 #'
-#' **`vars` needs at least two columns.** `mice::mice()` fits chained
-#' equations, so a single column has no other column to condition on --
-#' passing one fails inside `mice` with no context. This function checks
-#' for it and refuses with an explanation instead.
+#' **`vars` and `predictors` need at least two columns between them.**
+#' `mice::mice()` fits chained equations, so a single column has no other
+#' column to condition on, and passing one fails inside `mice` with no
+#' context. One imputed variable is fine when a predictor (the outcome,
+#' say) supplies the second column. This function checks for it and
+#' refuses with an explanation instead.
 #'
 #' **Columns `mice` drops are reported, not hidden.** `mice` quietly
 #' removes a column that is constant or collinear with another before it
@@ -123,7 +125,14 @@
 #' removed one of `vars`, that column comes back still missing, and this
 #' function refuses with the reason `mice` logged. If it removed one of
 #' `predictors`, the imputation ran without it, and this function warns,
-#' because the column you named to inform the draws did not.
+#' because the column you named to inform the draws did not. `mice` also
+#' drops a predictor from a single model when it is linearly dependent on
+#' the others among the rows where that model's target is observed, a
+#' dependence that need not hold in the full data. That is logged against
+#' the imputation method rather than as `"collinear"`, and this function
+#' warns for it too, naming the column, the target and how many of the
+#' `maxit` x `m` fits lost it. Every event `mice` logged is kept in the
+#' provenance as `logged_events`.
 #'
 #' **`data` cannot use `.imp` or `.id` as column names.** Both are reserved
 #' for the long-format draw index and row identifier this function adds.
@@ -174,9 +183,13 @@
 #'   [complete_case_pass()] for the two row-level columns the attrition
 #'   record consumes.
 #' @export
-impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
+# `predictors` is the last formal, after the defaulted ones, so a call
+# written before it existed keeps its positional meaning: the fourth
+# positional argument is still `cc_vars`.
+impute_multiple <- function(data, vars, m, cc_vars = names(data),
                             method = NULL, maxit = 5L,
-                            seed = getOption("hvtiRimputation.seed")) {
+                            seed = getOption("hvtiRimputation.seed"),
+                            predictors) {
   data <- validate_data(data)
 
   # .imp and .id are the long-format draw index and row identifier this
@@ -197,18 +210,6 @@ impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
   }
 
   vars <- validate_impute_vars(data, vars, arg = "vars")
-  if (length(vars) < 2L) {
-    stop(
-      "`vars` must name at least two columns. mice::mice() requires at ",
-      "least two columns to fit chained equations -- each imputed ",
-      "variable needs another column to condition on -- and fails with an ",
-      "opaque error (\"Data should contain at least two columns\") on a ",
-      "single one. Name a second column, even a fully observed one with ",
-      "nothing to impute, or use impute_mean() if a single numeric ",
-      "variable is all you need filled.",
-      call. = FALSE
-    )
-  }
   if (missing(predictors)) {
     warn_once(
       "predictors_missing",
@@ -229,6 +230,18 @@ impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
     predictors <- character(0)
   }
   predictors <- validate_predictors(data, predictors, vars)
+  if (length(vars) + length(predictors) < 2L) {
+    stop(
+      "impute_multiple() needs at least two columns between `vars` and ",
+      "`predictors`. mice::mice() fits chained equations, so the imputed ",
+      "variable needs another column to condition on, and with one column ",
+      "it fails with an opaque error (\"Data should contain at least two ",
+      "columns\"). Name the outcome in `predictors`, add a second column to ",
+      "`vars`, or use impute_mean() if a single numeric variable is all you ",
+      "need filled.",
+      call. = FALSE
+    )
+  }
   cc_vars <- validate_vars(data, cc_vars, arg = "cc_vars", numeric_only = FALSE)
   m <- validate_m(m)
   maxit <- validate_maxit(maxit)
@@ -333,6 +346,7 @@ impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
   # says so only in loggedEvents (plus a warning that gives a count). Read
   # the log, so the caller hears the reason rather than a missing value.
   dropped <- mice_dropped(mice_fit)
+  warn_model_drops(mice_fit, maxit = maxit, m = m)
   lost_predictors <- intersect(predictors, names(dropped))
   if (length(lost_predictors) > 0L) {
     warning(warningCondition(
@@ -409,6 +423,7 @@ impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
       maxit = maxit,
       vars = vars,
       predictors = predictors,
+      logged_events = logged_events(mice_fit),
       cc_vars = cc_vars,
       n_row = nrow(data),
       package = "hvtiRimputation",
@@ -430,4 +445,52 @@ mice_dropped <- function(mice_fit) {
   ev <- ev[ev$meth %in% c("constant", "collinear"), , drop = FALSE]
   out <- strsplit(as.character(ev$out), ", ", fixed = TRUE)
   stats::setNames(rep(as.character(ev$meth), lengths(out)), unlist(out))
+}
+
+# Every event mice logged, as a data frame with mice's own columns (it, im,
+# dep, meth, out); zero rows when it logged none.
+logged_events <- function(mice_fit) {
+  ev <- mice_fit$loggedEvents
+  if (is.null(ev)) {
+    return(data.frame(it = integer(0), im = integer(0), dep = character(0),
+                      meth = character(0), out = character(0)))
+  }
+  ev
+}
+
+# mice drops a predictor from one target's model, inside a single iteration
+# and draw, when it is linearly dependent on the other predictors among the
+# rows where that target is observed. It logs the event under the target's
+# imputation method (pmm, logreg, ...), not as "collinear", so
+# mice_dropped() does not see it, and the dependence need not exist in the
+# full data. Say which column, for which target, in how many of the
+# maxit x m fits.
+warn_model_drops <- function(mice_fit, maxit, m) {
+  ev <- logged_events(mice_fit)
+  ev <- ev[!(ev$meth %in% c("constant", "collinear")) & nzchar(ev$dep),
+           , drop = FALSE]
+  if (nrow(ev) == 0L) return(invisible())
+  out <- strsplit(as.character(ev$out), ", ", fixed = TRUE)
+  pairs <- data.frame(
+    dep = rep(as.character(ev$dep), lengths(out)),
+    out = unlist(out),
+    fit = rep(paste(ev$it, ev$im), lengths(out))
+  )
+  pairs <- unique(pairs)
+  counts <- stats::aggregate(fit ~ out + dep, data = pairs, FUN = length)
+  lines <- paste0(
+    "`", counts$out, "` from the model for `", counts$dep, "` in ",
+    counts$fit, " of ", maxit * m, " fits"
+  )
+  warning(warningCondition(
+    paste0(
+      "mice dropped a predictor from an imputation model as linearly ",
+      "dependent on the others, among the rows where that model's target ",
+      "is observed: ", paste(lines, collapse = "; "), ". In those fits ",
+      "the column did not inform the draws. The full list is in ",
+      "imputation_provenance()$logged_events."
+    ),
+    class = "hvtiRimputation_predictor_dropped"
+  ))
+  invisible()
 }
