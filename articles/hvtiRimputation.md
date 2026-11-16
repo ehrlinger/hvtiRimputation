@@ -290,20 +290,51 @@ that could quietly run one when you expected the other.
 
 ``` r
 
+observed <- dat[!is.na(dat$outcome), ]
+
 mi <- impute_multiple(
-  dat,
-  vars  = c("age", "bmi", "ef"),
-  m     = 2,
-  maxit = 2,
-  seed  = 20261007
+  observed,
+  vars       = c("age", "bmi", "ef"),
+  m          = 2,
+  predictors = "outcome",
+  maxit      = 2,
+  seed       = 20261007
 )
 mi
 #> <hvti_imputation_multi>
 #>   m:       2 completed dataset(s) (maxit = 2)
-#>   rows:    8
-#>   imputed: 3 variable(s), 5 row(s) touched
+#>   rows:    7
+#>   imputed: 3 variable(s), 4 row(s) touched
+#>   informed by: outcome
 #>   produced by hvtiRimputation 0.1.3
 ```
+
+### Why the outcome goes in `predictors`
+
+`mice` draws each missing value from a model of that column on the other
+columns it is given, and it is given `vars` plus `predictors`, nothing
+more. Suppose you leave the outcome out and then fit a model of the
+outcome on the completed data. Every filled `age` was drawn as though
+age had nothing to do with the outcome. The estimate you get mixes the
+real association (from rows where age was observed) with no association
+at all (from rows where it was filled), so it is pulled toward the null,
+and the more you filled the harder it pulls. For an association analysis
+the outcome has to inform the draws: name it in `predictors`. For a
+survival outcome that means both the follow-up time and the event
+indicator.
+
+A prediction model is different. It will meet new patients whose outcome
+is unknown, so an imputation the outcome never saw is defensible there,
+and you choose it by writing `predictors = character(0)`.
+
+`predictors` has no default, and that is deliberate. Before 0.1.4 the
+argument did not exist, so every call was outcome-free unless the
+outcome was itself in `vars`, and nobody had chosen that. We are still
+changing our processes to be correct. A call that leaves `predictors`
+out still runs this release, with a warning, and becomes an error in the
+next. A predictor is never imputed, so it has to be fully observed; that
+is why the example drops the one row whose outcome is missing first. A
+covariate with gaps belongs in `vars`.
 
 `m` and `seed` are both required. Copies of the SAS macros declare
 different `NIMPUTE` defaults, and they don’t even agree on whether the
@@ -321,21 +352,20 @@ all of them stacked long with `.imp` and `.id` columns:
 imputed_data(mi, imputation = 1)
 #>   age  bmi ef outcome
 #> 1  64 27.1 55       0
-#> 2  71 24.8 60       1
-#> 3  64 31.4 45       0
-#> 4  58 24.8 58       0
-#> 5  66 27.1 50       1
-#> 6  66 29.0 58      NA
-#> 7  73 26.3 62       1
-#> 8  69 30.2 40       0
+#> 2  71 31.4 60       1
+#> 3  66 31.4 45       0
+#> 4  58 24.8 62       0
+#> 5  66 30.2 50       1
+#> 6  73 26.3 62       1
+#> 7  69 30.2 40       0
 head(imputed_data(mi, imputation = "long"))
 #>   .imp .id age  bmi ef outcome
 #> 1    1   1  64 27.1 55       0
-#> 2    1   2  71 24.8 60       1
-#> 3    1   3  64 31.4 45       0
-#> 4    1   4  58 24.8 58       0
-#> 5    1   5  66 27.1 50       1
-#> 6    1   6  66 29.0 58      NA
+#> 2    1   2  71 31.4 60       1
+#> 3    1   3  66 31.4 45       0
+#> 4    1   4  58 24.8 62       0
+#> 5    1   5  66 30.2 50       1
+#> 6    1   6  73 26.3 62       1
 ```
 
 There is no default for `imputation`, because averaging the draws cell
@@ -352,9 +382,8 @@ imputed_matrix(mi)
 #> [3,]  TRUE FALSE FALSE
 #> [4,] FALSE FALSE  TRUE
 #> [5,] FALSE  TRUE FALSE
-#> [6,]  TRUE FALSE FALSE
+#> [6,] FALSE FALSE FALSE
 #> [7,] FALSE FALSE FALSE
-#> [8,] FALSE FALSE FALSE
 sum(kept_by_imputation(mi))
 #> [1] 4
 ```

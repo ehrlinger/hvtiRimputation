@@ -50,6 +50,22 @@ will be a separate function, because a function that quietly does one
 method when the caller expected the other is a worse failure than no
 function at all.
 
+**An integer column comes back double.** The fill value is the mean, and
+a mean is rarely a whole number, so a filled integer column is widened
+to double rather than rounded. Rounding would make the fill something
+other than the mean, which is the one thing this function promises to
+match (`PROC STANDARD` writes the unrounded mean too). Refusing integer
+columns would turn away every count and every column
+[`read.csv()`](https://rdrr.io/r/utils/read.table.html) read as whole
+numbers. So the column is widened and you are told, through a message
+you can silence with `options(hvti.quiet = TRUE)`. A fully observed
+integer column has nothing filled and keeps its type.
+
+**A column that looks like a row identifier draws a warning.** If a name
+in `vars` is `id`, or ends in `_id` or `.id`, and every observed value
+is distinct, the call still runs but warns: a patient identifier has no
+mean worth imputing. The test is deliberately narrow.
+
 ## Divergences from SAS
 
 **`vars` is required.** `PROC STANDARD` with no `VAR` statement

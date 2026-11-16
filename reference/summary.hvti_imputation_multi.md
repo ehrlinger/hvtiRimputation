@@ -42,8 +42,8 @@ dat <- data.frame(
 dat$age[sample(n, 4)] <- NA
 dat$grp[sample(n, 4)] <- NA
 
-out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2,
-                       seed = 1)
+out <- impute_multiple(dat, vars = c("age", "grp"), m = 2,
+                       predictors = character(0), maxit = 2, seed = 1)
 summary(out)
 #>   variable  method n_imputed prop_imputed
 #> 1      age     pmm         4    0.1333333
