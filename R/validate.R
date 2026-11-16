@@ -145,10 +145,7 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
     )
   }
 
-  supported <- vapply(data[vars], function(x) {
-    (is.numeric(x) && is.null(oldClass(x))) || is.factor(x) || is.logical(x)
-  }, logical(1))
-  unsupported <- vars[!supported]
+  unsupported <- vars[!vapply(data[vars], is_mice_class, logical(1))]
   if (length(unsupported) > 0L) {
     cls <- vapply(data[unsupported], function(x) oldClass(x)[1], character(1))
     stop(
@@ -162,7 +159,142 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
     )
   }
 
+  # An all-missing column gives mice nothing to model. mice drops it and
+  # then either fails with "No predictors were left" or returns it still
+  # missing, neither of which names the column or the reason.
+  all_missing <- vars[vapply(data[vars], function(x) all(is.na(x)),
+                             logical(1))]
+  if (length(all_missing) > 0L) {
+    stop(
+      "`", arg, "` names ", collapse_names(all_missing), ", which ",
+      plural(all_missing, "is", "are"), " missing for every row, so there ",
+      "is nothing to model ", plural(all_missing, "it", "them"), " from. ",
+      "Drop ", plural(all_missing, "it", "them"), " from `", arg, "`.",
+      call. = FALSE
+    )
+  }
+
+  # A constant column has no variation to model. mice removes it before
+  # imputing and then either returns it still missing or, when nothing else
+  # is left, fails with "No predictors were left after their removal".
+  constant <- vars[vapply(data[vars], is_constant, logical(1))]
+  if (length(constant) > 0L) {
+    stop(
+      "`", arg, "` names ", collapse_names(constant), ", which ",
+      plural(constant, "takes", "take"), " a single observed value. mice ",
+      "removes a constant column before imputing, so its missing values ",
+      "would never be filled. Fill ", plural(constant, "it", "them"),
+      " with that value yourself, or drop ", plural(constant, "it", "them"),
+      " from `", arg, "`.",
+      call. = FALSE
+    )
+  }
+
+  warn_id_like(data, vars, arg)
   vars
+}
+
+is_constant <- function(x) {
+  length(unique(x[!is.na(x)])) == 1L
+}
+
+is_mice_class <- function(x) {
+  (is.numeric(x) && is.null(oldClass(x))) || is.factor(x) || is.logical(x)
+}
+
+# `predictors` for impute_multiple(): columns that enter the mice model and
+# inform every imputed variable, but are never imputed themselves.
+#
+# They must be fully observed. mice accepts an incomplete column with an
+# empty method and runs, but what it does with the missing predictor values
+# is undocumented, and the draws change when it does it. A covariate with
+# gaps belongs in `vars`, where it is imputed and its fills are on the
+# record.
+validate_predictors <- function(data, predictors, vars) {
+  if (!is.character(predictors) || anyNA(predictors)) {
+    stop("`predictors` must be a character vector of column names, or ",
+         "character(0) for an imputation that no column outside `vars` ",
+         "informs.", call. = FALSE)
+  }
+  if (length(predictors) == 0L) return(character(0))
+  predictors <- validate_vars(data, predictors, arg = "predictors",
+                              numeric_only = FALSE)
+  both <- intersect(predictors, vars)
+  if (length(both) > 0L) {
+    stop("`predictors` and `vars` both name ", collapse_names(both), ". A ",
+         "column in `vars` already informs the other imputations; ",
+         "`predictors` is for columns that inform them without being ",
+         "imputed. Name each column in one or the other.", call. = FALSE)
+  }
+
+  is_character <- predictors[vapply(data[predictors], is.character,
+                                    logical(1))]
+  if (length(is_character) > 0L) {
+    stop("`predictors` names ", collapse_names(is_character), ", which ",
+         plural(is_character, "is", "are"), " still character. Convert ",
+         "with factor() first, so the levels are a choice you made.",
+         call. = FALSE)
+  }
+  unsupported <- predictors[!vapply(data[predictors], is_mice_class,
+                                    logical(1))]
+  if (length(unsupported) > 0L) {
+    cls <- vapply(data[unsupported], function(x) oldClass(x)[1], character(1))
+    stop("`predictors` names ",
+         paste0("`", unsupported, "` <", cls, ">", collapse = ", "),
+         ". A predictor must be plain numeric, factor or logical. A date ",
+         "would enter the model as days since 1970, which is rarely the ",
+         "quantity you mean; derive the number you do mean (years since ",
+         "surgery, say) and pass that.", call. = FALSE)
+  }
+
+  incomplete <- predictors[vapply(data[predictors], anyNA, logical(1))]
+  if (length(incomplete) > 0L) {
+    stop("`predictors` names ", collapse_names(incomplete), ", which ",
+         plural(incomplete, "has", "have"), " missing values. A predictor ",
+         "is not imputed, so it must be fully observed. Move ",
+         plural(incomplete, "it", "them"), " to `vars` to have ",
+         plural(incomplete, "it", "them"), " imputed and informing the ",
+         "others at the same time.", call. = FALSE)
+  }
+
+  constant <- predictors[vapply(data[predictors], is_constant, logical(1))]
+  if (length(constant) > 0L) {
+    stop("`predictors` names ", collapse_names(constant), ", which ",
+         plural(constant, "takes", "take"), " a single value. A constant ",
+         "carries no information to inform the draws, and mice would drop ",
+         plural(constant, "it", "them"), " silently.", call. = FALSE)
+  }
+
+  warn_id_like(data, predictors, "predictors")
+  predictors
+}
+
+# A row identifier imputed, or used to inform an imputation, is noise at
+# best. The check is deliberately narrow, so it fires on the obvious case
+# only: a column named `id`, or ending in `_id` or `.id`, whose observed
+# values are all distinct. It warns rather than refuses, because a name is
+# a guess and a refusal would leave a false positive with no way through.
+warn_id_like <- function(data, cols, arg) {
+  looks_like_id <- vapply(cols, function(v) {
+    x <- data[[v]][!is.na(data[[v]])]
+    grepl("(^|[._])id$", v, ignore.case = TRUE) && length(x) > 1L &&
+      !anyDuplicated(x)
+  }, logical(1))
+  id_cols <- cols[looks_like_id]
+  if (length(id_cols) > 0L) {
+    warning(warningCondition(
+      paste0(
+        "`", arg, "` names ", collapse_names(id_cols), ", which ",
+        plural(id_cols, "looks", "look"), " like a row identifier: the ",
+        "name ends in `id` and every observed value is distinct. An ",
+        "identifier carries no information about the patient, so ",
+        "imputing it, or letting it inform other imputations, adds ",
+        "noise. Drop it from `", arg, "` unless it is a real measurement."
+      ),
+      class = "hvtiRimputation_id_like"
+    ))
+  }
+  invisible(cols)
 }
 
 # `m` has no default for the same reason `vars` has none in impute_mean():
@@ -171,11 +303,31 @@ validate_impute_vars <- function(data, vars, arg = "vars") {
 # choosing a method (single vs. multiple imputation) the caller did not ask
 # for.
 validate_m <- function(m) {
-  if (!is.numeric(m) || length(m) != 1L || is.na(m) || m < 1 || m %% 1 != 0) {
+  if (!is_count(m)) {
     stop("`m` must be a single positive whole number. impute_multiple() ",
          "will not choose it for you.", call. = FALSE)
   }
   as.integer(m)
+}
+
+# `maxit` has a default, but an unvalidated one reaches mice::mice() and
+# fails there with an error about array lengths or binary operators that
+# names neither the argument nor the fix. Zero is refused too: mice accepts
+# it and returns its starting values, random draws from the observed data
+# with no chained equations run at all, which is not the method the caller
+# asked for.
+validate_maxit <- function(maxit) {
+  if (!is_count(maxit)) {
+    stop("`maxit` must be a single positive whole number, the number of ",
+         "chained-equations iterations, not ", deparse(maxit)[1], ".",
+         call. = FALSE)
+  }
+  as.integer(maxit)
+}
+
+is_count <- function(x) {
+  is.numeric(x) && length(x) == 1L && is.finite(x) && x >= 1 && x %% 1 == 0 &&
+    x <= .Machine$integer.max
 }
 
 # `seed` arrives either from the caller or from

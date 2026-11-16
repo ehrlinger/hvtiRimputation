@@ -194,15 +194,44 @@ single `impute()` with a `method=` argument that could quietly run one when
 you expected the other.
 
 ```{r impute-multiple}
+observed <- dat[!is.na(dat$outcome), ]
+
 mi <- impute_multiple(
-  dat,
-  vars  = c("age", "bmi", "ef"),
-  m     = 2,
-  maxit = 2,
-  seed  = 20261007
+  observed,
+  vars       = c("age", "bmi", "ef"),
+  m          = 2,
+  predictors = "outcome",
+  maxit      = 2,
+  seed       = 20261007
 )
 mi
 ```
+
+### Why the outcome goes in `predictors`
+
+`mice` draws each missing value from a model of that column on the other
+columns it is given, and it is given `vars` plus `predictors`, nothing more.
+Suppose you leave the outcome out and then fit a model of the outcome on the
+completed data. Every filled `age` was drawn as though age had nothing to do
+with the outcome. The estimate you get mixes the real association (from rows
+where age was observed) with no association at all (from rows where it was
+filled), so it is pulled toward the null, and the more you filled the harder
+it pulls. For an association analysis the outcome has to inform the draws:
+name it in `predictors`. For a survival outcome that means both the follow-up
+time and the event indicator.
+
+A prediction model is different. It will meet new patients whose outcome is
+unknown, so an imputation the outcome never saw is defensible there, and you
+choose it by writing `predictors = character(0)`.
+
+`predictors` has no default, and that is deliberate. Before 0.1.4 the
+argument did not exist, so every call was outcome-free unless the outcome
+was itself in `vars`, and nobody had chosen that. We are still changing our
+processes to be correct. A call that leaves `predictors` out still runs this
+release, with a warning, and becomes an error in the next. A predictor is
+never imputed, so it has to be fully observed; that is why the example
+drops the one row whose outcome is missing first. A covariate with gaps
+belongs in `vars`.
 
 `m` and `seed` are both required. Copies of the SAS macros declare different
 `NIMPUTE` defaults, and they don't even agree on whether the default is 1, so

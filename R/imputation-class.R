@@ -116,7 +116,12 @@ NULL
 # read identically from either class and are not made into S3 generics --
 # only imputed_data()'s contract genuinely differs by class.
 .stopifnot_hvti_imputation <- function(x) {
-  stopifnot(inherits(x, c("hvti_imputation", "hvti_imputation_multi")))
+  if (!inherits(x, c("hvti_imputation", "hvti_imputation_multi"))) {
+    stop("`x` must be the result of impute_mean() or impute_multiple() ",
+         "(class `hvti_imputation` or `hvti_imputation_multi`), not ",
+         class(x)[1], ".", call. = FALSE)
+  }
+  invisible(x)
 }
 
 #' @rdname imputation-accessors

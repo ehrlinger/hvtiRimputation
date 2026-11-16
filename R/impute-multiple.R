@@ -18,6 +18,34 @@
 #' completed dataset needs multiplied by `m` -- it needs `mice` making its
 #' own per-column decision, `m` times.
 #'
+#' **What informs the draws.** `mice` models each imputed column from the
+#' other columns it is given, and it is given `vars` plus `predictors`,
+#' nothing else. A column left out of both cannot shape a single draw. That
+#' matters most for the outcome. If you impute the covariates without the
+#' outcome and then fit a model of the outcome on the completed data, every
+#' filled value was drawn as though it had no relationship to the outcome.
+#' The association you estimate is a blend of the real one (from observed
+#' rows) and zero (from filled ones), so it is biased toward the null, and
+#' the more you filled the stronger the pull. Moons and colleagues (2006)
+#' and Sterne and colleagues (2009) both make this point, and it is the
+#' standard advice for multiple imputation.
+#'
+#' So `predictors` is **required, with no default**. For an association
+#' analysis, name the outcome there: for a survival outcome, both the
+#' follow-up time and the event indicator (the Nelson-Aalen cumulative
+#' hazard is a better predictor than raw time, per White and Royston,
+#' 2009). For a prediction model, an imputation the outcome never saw is
+#' defensible, because the model will meet new patients whose outcome is
+#' unknown; pass `predictors = character(0)` to make that choice on
+#' purpose. Before
+#' 0.1.4 the argument did not exist and every call was outcome-free unless
+#' the outcome was itself in `vars`. We did not choose that; the function
+#' simply had no way to ask. We are still changing our processes to be
+#' correct, and a required argument is how the choice gets made, and made
+#' visibly, at every call site. A call without `predictors` still runs, as
+#' before, with a once-per-session warning; in the next release it is an
+#' error.
+#'
 #' `impute_multiple()` trusts the class of each `vars` column as the sole
 #' signal for what kind of variable it is, and does not re-derive that from
 #' its distinct-value count. Deciding a column's type is
@@ -31,12 +59,21 @@
 #'   default** -- for the same reason `vars` has none in [impute_mean()]: the
 #'   SAS corpus's `NIMPUTE` defaults disagree across macro copies, so there
 #'   is no single "the default" to inherit.
+#' @param predictors Character vector of columns that inform the
+#'   imputation without being imputed: they enter the `mice` data and its
+#'   predictor matrix, and their values are never changed. **Required, with
+#'   no default**; `character(0)` is the explicit choice of an imputation
+#'   that no column outside `vars` informs. For an association analysis this
+#'   is where the outcome goes (time and status, for a survival outcome);
+#'   see Details for why. Each column must be fully observed, plain numeric,
+#'   factor or logical, and not also in `vars`. Omitting the argument runs
+#'   as `character(0)` with a deprecation warning, for this release only.
 #' @param method `NULL` (the default) uses `mice`'s own per-column method
 #'   selection for every `vars` column. A named character vector overrides
 #'   specific columns by name; every column not named keeps its default.
 #'   There is no single unnamed string form.
-#' @param maxit Number of chained-equations iterations. Passed to
-#'   `mice::mice()`.
+#' @param maxit Number of chained-equations iterations, a single positive
+#'   whole number. Passed to `mice::mice()`.
 #' @param seed A single whole number. **Required**, either here or once per
 #'   session through `options(hvtiRimputation.seed = )`, which is where the
 #'   default reads it from. With neither, the call fails rather than drawing
@@ -56,8 +93,9 @@
 #' RNG kind is R's default.
 #'
 #' **Choosing `m`.** For a prediction model, `m = 1`, an outcome-free
-#' single draw, is defensible. `m > 1` costs more but lets a downstream
-#' variable screen show how much its selection depends on which draw it saw.
+#' single draw (`predictors = character(0)`), is defensible. `m > 1` costs
+#' more but lets a downstream variable screen show how much its selection
+#' depends on which draw it saw.
 #'
 #' @return An object of class `hvti_imputation_multi`.
 #'   [imputed_data()] with a required `imputation` argument gives one
@@ -79,6 +117,14 @@
 #' passing one fails inside `mice` with no context. This function checks
 #' for it and refuses with an explanation instead.
 #'
+#' **Columns `mice` drops are reported, not hidden.** `mice` quietly
+#' removes a column that is constant or collinear with another before it
+#' imputes anything, and records the removal in its `loggedEvents`. If it
+#' removed one of `vars`, that column comes back still missing, and this
+#' function refuses with the reason `mice` logged. If it removed one of
+#' `predictors`, the imputation ran without it, and this function warns,
+#' because the column you named to inform the draws did not.
+#'
 #' **`data` cannot use `.imp` or `.id` as column names.** Both are reserved
 #' for the long-format draw index and row identifier this function adds.
 #'
@@ -95,24 +141,40 @@
 #' dat <- data.frame(
 #'   age  = round(rnorm(n, 60, 8)),
 #'   grp  = factor(sample(c("a", "b", "c"), n, replace = TRUE)),
-#'   flag = sample(c(TRUE, FALSE), n, replace = TRUE)
+#'   flag = sample(c(TRUE, FALSE), n, replace = TRUE),
+#'   dead = sample(c(0, 1), n, replace = TRUE)
 #' )
 #' dat$age[sample(n, 4)]  <- NA
 #' dat$grp[sample(n, 4)]  <- NA
 #' dat$flag[sample(n, 4)] <- NA
 #'
+#' # `dead` is the outcome: it informs the draws and is never imputed.
 #' out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2,
-#'                        maxit = 2, seed = 1)
+#'                        predictors = "dead", maxit = 2, seed = 1)
 #' imputed_data(out, imputation = 1)
 #' imputed_data(out, imputation = "long")
 #' imputed_matrix(out)
+#'
+#' @references
+#' Moons KGM, Donders RART, Stijnen T, Harrell FE Jr (2006). Using the
+#' outcome for imputation of missing predictor values was preferred.
+#' *Journal of Clinical Epidemiology*, 59(10), 1092-1101.
+#' \doi{10.1016/j.jclinepi.2006.01.009}
+#'
+#' Sterne JAC, White IR, Carlin JB, et al. (2009). Multiple imputation for
+#' missing data in epidemiological and clinical research: potential and
+#' pitfalls. *BMJ*, 338, b2393. \doi{10.1136/bmj.b2393}
+#'
+#' White IR, Royston P (2009). Imputing missing covariate values for the
+#' Cox model. *Statistics in Medicine*, 28(15), 1982-1998.
+#' \doi{10.1002/sim.3618}
 #'
 #' @seealso [impute_mean()] for single imputation -- there is deliberately no
 #'   one function that picks between them. [imputed_any()] and
 #'   [complete_case_pass()] for the two row-level columns the attrition
 #'   record consumes.
 #' @export
-impute_multiple <- function(data, vars, m, cc_vars = names(data),
+impute_multiple <- function(data, vars, m, predictors, cc_vars = names(data),
                             method = NULL, maxit = 5L,
                             seed = getOption("hvtiRimputation.seed")) {
   data <- validate_data(data)
@@ -147,8 +209,29 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
       call. = FALSE
     )
   }
+  if (missing(predictors)) {
+    warn_once(
+      "predictors_missing",
+      paste0(
+        "impute_multiple() was called without `predictors`. It ran as ",
+        "before, with no column outside `vars` informing the draws, so the ",
+        "outcome shaped the imputations only if it is itself in `vars`. ",
+        "For an association analysis that biases the estimated ",
+        "associations toward the null. Pass the outcome as `predictors` ",
+        "(for survival, both time and status), or `predictors = ",
+        "character(0)` to choose an outcome-free imputation on purpose, as ",
+        "a prediction model may. We are still changing our processes to be ",
+        "correct: omitting `predictors` becomes an error in the next ",
+        "release. This warning is shown once per session."
+      ),
+      class = c("hvtiRimputation_deprecated", "deprecatedWarning")
+    )
+    predictors <- character(0)
+  }
+  predictors <- validate_predictors(data, predictors, vars)
   cc_vars <- validate_vars(data, cc_vars, arg = "cc_vars", numeric_only = FALSE)
   m <- validate_m(m)
+  maxit <- validate_maxit(maxit)
   seed <- validate_seed(seed)
 
   # Read BEFORE anything is filled, same reasoning as impute_mean()'s cc_pre:
@@ -162,10 +245,14 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
   )
   for (v in vars) record[, v] <- is.na(data[[v]])
 
-  imp_input <- data[vars]
-  is_logical_col <- vapply(imp_input, is.logical, logical(1))
+  # Predictors ride along in the mice data so the default predictor matrix
+  # uses them for every imputed column; an empty method keeps mice from
+  # imputing them (they are fully observed, so it would not anyway).
+  imp_input <- data[c(vars, predictors)]
+  is_logical_col <- vapply(data[vars], is.logical, logical(1))
 
   method_vec <- mice::make.method(imp_input)
+  method_vec[predictors] <- ""
   if (!is.null(method)) {
     if (!is.character(method) || anyNA(method)) {
       stop(
@@ -242,9 +329,46 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
     }
   }
 
+  # mice removes a constant or collinear column before imputing anything and
+  # says so only in loggedEvents (plus a warning that gives a count). Read
+  # the log, so the caller hears the reason rather than a missing value.
+  dropped <- mice_dropped(mice_fit)
+  lost_predictors <- intersect(predictors, names(dropped))
+  if (length(lost_predictors) > 0L) {
+    warning(warningCondition(
+      paste0(
+        "mice removed ", collapse_names(lost_predictors), " from the ",
+        "model as ", paste(unique(dropped[lost_predictors]), collapse = "/"),
+        ", so ", plural(lost_predictors, "it", "they"), " did not inform ",
+        "the draws although `predictors` named ",
+        plural(lost_predictors, "it", "them"), ". Check ",
+        plural(lost_predictors, "that column", "those columns"),
+        " against the others."
+      ),
+      class = "hvtiRimputation_predictor_dropped"
+    ))
+  }
+
   still_missing <- vars[
     vapply(vars, function(v) anyNA(completed[[v]]), logical(1))
   ]
+  explained <- intersect(still_missing, names(dropped))
+  if (length(explained) > 0L) {
+    reason <- ifelse(
+      dropped[explained] == "constant",
+      "constant (its observed values do not vary)",
+      paste0(dropped[explained], " with other columns in the model")
+    )
+    stop(
+      "mice removed ",
+      paste0("`", explained, "` as ", reason, collapse = "; "),
+      " before imputing, so its missing values were never filled. Drop ",
+      plural(explained, "it", "them"), " from `vars`. A constant column ",
+      "can be filled with its one observed value by hand; a collinear one ",
+      "is better left out, or replaced by the column it duplicates.",
+      call. = FALSE
+    )
+  }
   if (length(still_missing) > 0L) {
     stop(
       "`", paste(still_missing, collapse = "`, `"), "` still has missing ",
@@ -284,6 +408,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
       m = m,
       maxit = maxit,
       vars = vars,
+      predictors = predictors,
       cc_vars = cc_vars,
       n_row = nrow(data),
       package = "hvtiRimputation",
@@ -292,4 +417,17 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
       time = Sys.time()
     )
   )
+}
+
+# The columns mice removed from the model before imputing, named by column,
+# valued by the reason it logged ("constant", "collinear"). Empty when it
+# removed nothing.
+mice_dropped <- function(mice_fit) {
+  ev <- mice_fit$loggedEvents
+  if (is.null(ev) || nrow(ev) == 0L || !all(c("meth", "out") %in% names(ev))) {
+    return(stats::setNames(character(0), character(0)))
+  }
+  ev <- ev[ev$meth %in% c("constant", "collinear"), , drop = FALSE]
+  out <- strsplit(as.character(ev$out), ", ", fixed = TRUE)
+  stats::setNames(rep(as.character(ev$meth), lengths(out)), unlist(out))
 }

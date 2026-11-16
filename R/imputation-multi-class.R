@@ -108,6 +108,13 @@ print.hvti_imputation_multi <- function(x, ...) {
   cat("  rows:    ", p$n_row, "\n", sep = "")
   cat("  imputed: ", length(p$vars), " variable(s), ",
       sum(imputed_any(x)), " row(s) touched\n", sep = "")
+  # A record built before 0.1.4 has no predictors field; say nothing then.
+  if (!is.null(p$predictors)) {
+    cat("  informed by: ",
+        if (length(p$predictors) == 0L) "nothing outside `vars`" else
+          paste(p$predictors, collapse = ", "),
+        "\n", sep = "")
+  }
   cat("  produced by ", p$package, " ", p$version, "\n", sep = "")
   invisible(x)
 }
@@ -138,8 +145,8 @@ print.hvti_imputation_multi <- function(x, ...) {
 #' dat$age[sample(n, 4)] <- NA
 #' dat$grp[sample(n, 4)] <- NA
 #'
-#' out <- impute_multiple(dat, vars = c("age", "grp"), m = 2, maxit = 2,
-#'                        seed = 1)
+#' out <- impute_multiple(dat, vars = c("age", "grp"), m = 2,
+#'                        predictors = character(0), maxit = 2, seed = 1)
 #' summary(out)
 #' @export
 summary.hvti_imputation_multi <- function(object, ...) {

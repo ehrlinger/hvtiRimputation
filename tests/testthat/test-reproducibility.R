@@ -22,10 +22,12 @@ test_that("the same seed gives the same imputations whatever the RNG state", {
   dat <- repro_fixture()
 
   set.seed(1)
-  a <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
+  a <- impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                       maxit = 2, seed = 7)
   set.seed(999)
   stats::runif(50)
-  b <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
+  b <- impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                       maxit = 2, seed = 7)
 
   expect_identical(
     imputed_data(a, imputation = "long"),
@@ -35,13 +37,15 @@ test_that("the same seed gives the same imputations whatever the RNG state", {
 
 test_that("a caller's non-default RNGkind() does not change the draws", {
   dat <- repro_fixture()
-  a <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
+  a <- impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                       maxit = 2, seed = 7)
 
   withr::local_preserve_seed()
   old <- RNGkind()
   withr::defer(do.call(RNGkind, as.list(unname(old))))
   RNGkind("L'Ecuyer-CMRG", "Box-Muller", "Rejection")
-  b <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
+  b <- impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                       maxit = 2, seed = 7)
 
   expect_identical(
     imputed_data(a, imputation = "long"),
@@ -59,24 +63,31 @@ test_that("impute_multiple() leaves the caller's random stream where it was", {
   set.seed(3)
   expected <- stats::runif(3)
   set.seed(3)
-  impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2, seed = 7)
+  impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                  maxit = 2, seed = 7)
   expect_identical(stats::runif(3), expected)
 })
 
 test_that("the session option supplies the seed, and an explicit one wins", {
   dat <- repro_fixture()
-  explicit <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2,
+  explicit <- impute_multiple(dat, vars = repro_vars, m = 2,
+                              predictors = character(0),
+                              maxit = 2,
                               seed = 7)
 
   withr::local_options(hvtiRimputation.seed = 7L)
-  from_option <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2)
+  from_option <- impute_multiple(dat, vars = repro_vars, m = 2,
+                                 predictors = character(0),
+                                 maxit = 2)
   expect_identical(
     imputed_data(explicit, imputation = "long"),
     imputed_data(from_option, imputation = "long")
   )
   expect_identical(imputation_provenance(from_option)$seed, 7L)
 
-  overridden <- impute_multiple(dat, vars = repro_vars, m = 2, maxit = 2,
+  overridden <- impute_multiple(dat, vars = repro_vars, m = 2,
+                                predictors = character(0),
+                                maxit = 2,
                                 seed = 8)
   expect_identical(imputation_provenance(overridden)$seed, 8L)
 })
@@ -86,12 +97,13 @@ test_that("an unseeded call is refused, not drawn", {
   withr::local_options(hvtiRimputation.seed = NULL)
 
   expect_error(
-    impute_multiple(dat, vars = repro_vars, m = 2),
+    impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0)),
     "`seed` is required"
   )
   for (bad in list(NA, NA_integer_, 1.5, c(1, 2), "1", Inf, 2^31)) {
     expect_error(
-      impute_multiple(dat, vars = repro_vars, m = 2, seed = bad),
+      impute_multiple(dat, vars = repro_vars, m = 2, predictors = character(0),
+                      seed = bad),
       "`seed` must be a single whole number"
     )
   }
