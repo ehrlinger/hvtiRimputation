@@ -41,8 +41,12 @@
 #'   \item{`matrix`}{the logical record, via [imputed_matrix()]}
 #'   \item{`complete_case_pass`}{row-level, read from the input}
 #'   \item{`analysis_pass`}{row-level, after imputing}
-#'   \item{`provenance`}{method (one per imputed variable), `m`, `maxit`,
-#'     and the rest, via [imputation_provenance()]}
+#'   \item{`provenance`}{the seven fields every hvtiR package records
+#'     (`package`, `version`, `sha`, `method`, `seed`, `rng_kind`, `time`;
+#'     see [hvti_imputation]), with `method` named by imputed variable and
+#'     `rng_kind` the kinds the draws ran under. Then `m`, `maxit`, `vars`,
+#'     `predictors`, `logged_events` (every event `mice` logged), `cc_vars`
+#'     and `n_row`. Via [imputation_provenance()]}
 #' }
 #'
 #' @name hvti_imputation_multi
@@ -74,7 +78,7 @@ new_hvti_imputation_multi <- function(data_long, matrix, complete_case_pass,
 imputed_data.hvti_imputation_multi <- function(x, imputation, ...) {
   m <- x$provenance$m
   if (missing(imputation)) {
-    stop(
+    abort(
       "`imputation` is required: pass an integer in 1:", m, " for one ",
       "completed dataset, or \"long\" for all ", m, " stacked together. ",
       "There is no default here on purpose -- averaging the completed ",
@@ -89,8 +93,8 @@ imputed_data.hvti_imputation_multi <- function(x, imputation, ...) {
   }
   if (!is.numeric(imputation) || length(imputation) != 1L ||
         is.na(imputation) || !imputation %in% seq_len(m)) {
-    stop("`imputation` must be \"long\", or a single integer in 1:", m, ".",
-         call. = FALSE)
+    abort("`imputation` must be \"long\", or a single integer in 1:", m, ".",
+          call. = FALSE)
   }
   out <- x$data_long[x$data_long$.imp == imputation, , drop = FALSE]
   out[[".imp"]] <- NULL
@@ -123,17 +127,18 @@ print.hvti_imputation_multi <- function(x, ...) {
 #'
 #' Reduces the record to a per-variable table: which method each variable
 #' was imputed with, and how many of its values were filled. Unlike
-#' [summary.hvti_imputation()], there is no single `fill_value` column --
-#' each of the `m` draws can fill a given cell with a different value, which
-#' is the entire point of multiple imputation, so no single value speaks for
-#' all of them.
+#' [summary.hvti_imputation()], `fill_value` is always `NA`: each of the
+#' `m` draws can fill a given cell with a different value, which is the
+#' entire point of multiple imputation, so no single value speaks for all
+#' of them. The column is there, as a gap, so the two summaries have the
+#' same columns and bind with [rbind()].
 #'
 #' @param object An object of class `hvti_imputation_multi`.
 #' @param ... Ignored.
 #'
 #' @return A data frame with one row per imputed variable: the variable
-#'   name, the method used, the number of values filled, and the proportion
-#'   of rows that is.
+#'   name, the method used, the number of values filled, the proportion of
+#'   rows that is, and `fill_value` (`NA`, see above).
 #'
 #' @examples
 #' set.seed(42)
@@ -156,6 +161,7 @@ summary.hvti_imputation_multi <- function(object, ...) {
     method = unname(object$provenance$method[colnames(object$matrix)]),
     n_imputed = as.integer(n_imputed),
     prop_imputed = unname(n_imputed / nrow(object$matrix)),
+    fill_value = NA_real_,
     row.names = NULL,
     stringsAsFactors = FALSE
   )

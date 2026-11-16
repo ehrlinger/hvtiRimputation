@@ -49,8 +49,12 @@ input this function accepts.
 \item{\code{matrix}}{the logical record, via \code{\link[=imputed_matrix]{imputed_matrix()}}}
 \item{\code{complete_case_pass}}{row-level, read from the input}
 \item{\code{analysis_pass}}{row-level, after imputing}
-\item{\code{provenance}}{method (one per imputed variable), \code{m}, \code{maxit},
-and the rest, via \code{\link[=imputation_provenance]{imputation_provenance()}}}
+\item{\code{provenance}}{the seven fields every hvtiR package records
+(\code{package}, \code{version}, \code{sha}, \code{method}, \code{seed}, \code{rng_kind}, \code{time};
+see \link{hvti_imputation}), with \code{method} named by imputed variable and
+\code{rng_kind} the kinds the draws ran under. Then \code{m}, \code{maxit}, \code{vars},
+\code{predictors}, \code{logged_events} (every event \code{mice} logged), \code{cc_vars}
+and \code{n_row}. Via \code{\link[=imputation_provenance]{imputation_provenance()}}}
 }
 }
 

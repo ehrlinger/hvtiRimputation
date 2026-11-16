@@ -291,7 +291,7 @@ test_that("a method incompatible with a logical column is refused", {
   )
 })
 
-test_that("summary() reports method and counts, with no fill_value", {
+test_that("summary() reports method and counts, and no fill value", {
   dat <- multi_fixture()
   out <- impute_multiple(
     dat, vars = c("age", "grp", "flag"), m = 2, predictors = character(0),
@@ -300,8 +300,11 @@ test_that("summary() reports method and counts, with no fill_value", {
 
   s <- summary(out)
   expect_setequal(
-    names(s), c("variable", "method", "n_imputed", "prop_imputed")
+    names(s),
+    c("variable", "method", "n_imputed", "prop_imputed", "fill_value")
   )
+  # Each draw fills a cell differently, so no single value is reported.
+  expect_true(all(is.na(s$fill_value)))
   expect_equal(sort(s$variable), sort(c("age", "grp", "flag")))
 })
 

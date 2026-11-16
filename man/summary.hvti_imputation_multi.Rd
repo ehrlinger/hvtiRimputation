@@ -13,16 +13,17 @@
 }
 \value{
 A data frame with one row per imputed variable: the variable
-name, the method used, the number of values filled, and the proportion
-of rows that is.
+name, the method used, the number of values filled, the proportion of
+rows that is, and \code{fill_value} (\code{NA}, see above).
 }
 \description{
 Reduces the record to a per-variable table: which method each variable
 was imputed with, and how many of its values were filled. Unlike
-\code{\link[=summary.hvti_imputation]{summary.hvti_imputation()}}, there is no single \code{fill_value} column --
-each of the \code{m} draws can fill a given cell with a different value, which
-is the entire point of multiple imputation, so no single value speaks for
-all of them.
+\code{\link[=summary.hvti_imputation]{summary.hvti_imputation()}}, \code{fill_value} is always \code{NA}: each of the
+\code{m} draws can fill a given cell with a different value, which is the
+entire point of multiple imputation, so no single value speaks for all
+of them. The column is there, as a gap, so the two summaries have the
+same columns and bind with \code{\link[=rbind]{rbind()}}.
 }
 \examples{
 set.seed(42)
