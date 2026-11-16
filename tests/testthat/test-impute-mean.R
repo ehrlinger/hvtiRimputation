@@ -104,3 +104,32 @@ test_that("a variable with nothing missing gets FALSE, not an error", {
   expect_false(any(imputed_matrix(out)))
   expect_equal(imputed_any(out), c(FALSE, FALSE))
 })
+
+test_that("a filled integer column comes back double, with a message", {
+  dat <- data.frame(n = c(1L, 2L, NA, 4L), full = c(1L, 2L, 3L, 4L))
+  expect_message(
+    out <- impute_mean(dat, vars = c("n", "full")),
+    "`n` was integer and is now double"
+  )
+  expect_type(imputed_data(out)$n, "double")
+  expect_equal(imputed_data(out)$n[3], 7 / 3)
+  # Nothing filled, nothing widened.
+  expect_type(imputed_data(out)$full, "integer")
+})
+
+test_that("the integer message respects hvti.quiet", {
+  withr::local_options(hvti.quiet = TRUE)
+  dat <- data.frame(n = c(1L, 2L, NA, 4L))
+  expect_no_message(impute_mean(dat, vars = "n"))
+})
+
+test_that("an ID-like vars column draws a warning", {
+  dat <- data.frame(id = c(1, 2, NA, 4), age = c(50, NA, 60, 70))
+  expect_warning(impute_mean(dat, vars = c("id", "age")),
+                 class = "hvtiRimputation_id_like")
+})
+
+test_that("accessors refuse a non-imputation object with a real message", {
+  expect_error(imputed_matrix(list()),
+               "must be the result of impute_mean\\(\\) or impute_multiple")
+})

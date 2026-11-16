@@ -11,7 +11,8 @@ impute_multiple(
   cc_vars = names(data),
   method = NULL,
   maxit = 5L,
-  seed = getOption("hvtiRimputation.seed")
+  seed = getOption("hvtiRimputation.seed"),
+  predictors
 )
 }
 \arguments{
@@ -35,14 +36,24 @@ selection for every \code{vars} column. A named character vector overrides
 specific columns by name; every column not named keeps its default.
 There is no single unnamed string form.}
 
-\item{maxit}{Number of chained-equations iterations. Passed to
-\code{mice::mice()}.}
+\item{maxit}{Number of chained-equations iterations, a single positive
+whole number. Passed to \code{mice::mice()}.}
 
 \item{seed}{A single whole number. \strong{Required}, either here or once per
 session through \code{options(hvtiRimputation.seed = )}, which is where the
 default reads it from. With neither, the call fails rather than drawing
 from an unseeded RNG. Passed to \code{mice::mice()} and recorded in
 \code{\link[=imputation_provenance]{imputation_provenance()}}.}
+
+\item{predictors}{Character vector of columns that inform the
+imputation without being imputed: they enter the \code{mice} data and its
+predictor matrix, and their values are never changed. \strong{Required, with
+no default}; \code{character(0)} is the explicit choice of an imputation
+that no column outside \code{vars} informs. For an association analysis this
+is where the outcome goes (time and status, for a survival outcome);
+see Details for why. Each column must be fully observed, plain numeric,
+factor or logical, and not also in \code{vars}. Omitting the argument runs
+as \code{character(0)} with a deprecation warning, for this release only.}
 }
 \value{
 An object of class \code{hvti_imputation_multi}.
@@ -72,6 +83,34 @@ avoids for \code{vars} and \code{m}, and it is not what \code{impute_mean()}'s s
 completed dataset needs multiplied by \code{m} -- it needs \code{mice} making its
 own per-column decision, \code{m} times.
 
+\strong{What informs the draws.} \code{mice} models each imputed column from the
+other columns it is given, and it is given \code{vars} plus \code{predictors},
+nothing else. A column left out of both cannot shape a single draw. That
+matters most for the outcome. If you impute the covariates without the
+outcome and then fit a model of the outcome on the completed data, every
+filled value was drawn as though it had no relationship to the outcome.
+The association you estimate is a blend of the real one (from observed
+rows) and zero (from filled ones), so it is biased toward the null, and
+the more you filled the stronger the pull. Moons and colleagues (2006)
+and Sterne and colleagues (2009) both make this point, and it is the
+standard advice for multiple imputation.
+
+So \code{predictors} is \strong{required, with no default}. For an association
+analysis, name the outcome there: for a survival outcome, both the
+follow-up time and the event indicator (the Nelson-Aalen cumulative
+hazard is a better predictor than raw time, per White and Royston,
+2009). For a prediction model, an imputation the outcome never saw is
+defensible, because the model will meet new patients whose outcome is
+unknown; pass \code{predictors = character(0)} to make that choice on
+purpose. Before
+0.1.4 the argument did not exist and every call was outcome-free unless
+the outcome was itself in \code{vars}. We did not choose that; the function
+simply had no way to ask. We are still changing our processes to be
+correct, and a required argument is how the choice gets made, and made
+visibly, at every call site. A call without \code{predictors} still runs, as
+before, with a once-per-session warning; in the next release it is an
+error.
+
 \code{impute_multiple()} trusts the class of each \code{vars} column as the sole
 signal for what kind of variable it is, and does not re-derive that from
 its distinct-value count. Deciding a column's type is
@@ -92,8 +131,9 @@ a call that already passed a seed gets the same values as before when the
 RNG kind is R's default.
 
 \strong{Choosing \code{m}.} For a prediction model, \code{m = 1}, an outcome-free
-single draw, is defensible. \code{m > 1} costs more but lets a downstream
-variable screen show how much its selection depends on which draw it saw.
+single draw (\code{predictors = character(0)}), is defensible. \code{m > 1} costs
+more but lets a downstream variable screen show how much its selection
+depends on which draw it saw.
 }
 \section{Divergences from SAS}{
 
@@ -104,10 +144,27 @@ macro copy in the corpus this package ports. Neither default is
 inherited here, for the reason recorded in \code{impute_mean()}'s own
 Divergences section.
 
-\strong{\code{vars} needs at least two columns.} \code{mice::mice()} fits chained
-equations, so a single column has no other column to condition on --
-passing one fails inside \code{mice} with no context. This function checks
-for it and refuses with an explanation instead.
+\strong{\code{vars} and \code{predictors} need at least two columns between them.}
+\code{mice::mice()} fits chained equations, so a single column has no other
+column to condition on, and passing one fails inside \code{mice} with no
+context. One imputed variable is fine when a predictor (the outcome,
+say) supplies the second column. This function checks for it and
+refuses with an explanation instead.
+
+\strong{Columns \code{mice} drops are reported, not hidden.} \code{mice} quietly
+removes a column that is constant or collinear with another before it
+imputes anything, and records the removal in its \code{loggedEvents}. If it
+removed one of \code{vars}, that column comes back still missing, and this
+function refuses with the reason \code{mice} logged. If it removed one of
+\code{predictors}, the imputation ran without it, and this function warns,
+because the column you named to inform the draws did not. \code{mice} also
+drops a predictor from a single model when it is linearly dependent on
+the others among the rows where that model's target is observed, a
+dependence that need not hold in the full data. That is logged against
+the imputation method rather than as \code{"collinear"}, and this function
+warns for it too, naming the column, the target and how many of the
+\code{maxit} x \code{m} fits lost it. Every event \code{mice} logged is kept in the
+provenance as \code{logged_events}.
 
 \strong{\code{data} cannot use \code{.imp} or \code{.id} as column names.} Both are reserved
 for the long-format draw index and row identifier this function adds.
@@ -126,18 +183,34 @@ n <- 30
 dat <- data.frame(
   age  = round(rnorm(n, 60, 8)),
   grp  = factor(sample(c("a", "b", "c"), n, replace = TRUE)),
-  flag = sample(c(TRUE, FALSE), n, replace = TRUE)
+  flag = sample(c(TRUE, FALSE), n, replace = TRUE),
+  dead = sample(c(0, 1), n, replace = TRUE)
 )
 dat$age[sample(n, 4)]  <- NA
 dat$grp[sample(n, 4)]  <- NA
 dat$flag[sample(n, 4)] <- NA
 
+# `dead` is the outcome: it informs the draws and is never imputed.
 out <- impute_multiple(dat, vars = c("age", "grp", "flag"), m = 2,
-                       maxit = 2, seed = 1)
+                       predictors = "dead", maxit = 2, seed = 1)
 imputed_data(out, imputation = 1)
 imputed_data(out, imputation = "long")
 imputed_matrix(out)
 
+}
+\references{
+Moons KGM, Donders RART, Stijnen T, Harrell FE Jr (2006). Using the
+outcome for imputation of missing predictor values was preferred.
+\emph{Journal of Clinical Epidemiology}, 59(10), 1092-1101.
+\doi{10.1016/j.jclinepi.2006.01.009}
+
+Sterne JAC, White IR, Carlin JB, et al. (2009). Multiple imputation for
+missing data in epidemiological and clinical research: potential and
+pitfalls. \emph{BMJ}, 338, b2393. \doi{10.1136/bmj.b2393}
+
+White IR, Royston P (2009). Imputing missing covariate values for the
+Cox model. \emph{Statistics in Medicine}, 28(15), 1982-1998.
+\doi{10.1002/sim.3618}
 }
 \seealso{
 \code{\link[=impute_mean]{impute_mean()}} for single imputation -- there is deliberately no
