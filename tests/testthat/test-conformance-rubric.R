@@ -61,8 +61,15 @@ test_that("summary() column sets line up across the two classes", {
     impute_multiple(big, vars = c("a", "b"), m = 2, maxit = 1, seed = 3,
                     predictors = character(0))
   )
-  expect_identical(names(single), c(names(multi), "fill_value"))
+  expect_identical(names(single), names(multi))
   expect_identical(single$method, c("mean", "mean"))
+
+  # The promise is that the tables bind, so exercise the bind itself.
+  both <- rbind(single, multi)
+  expect_identical(nrow(both), 4L)
+  expect_type(both$fill_value, "double")
+  # No single value speaks for every draw: a gap, not a plausible number.
+  expect_identical(multi$fill_value, c(NA_real_, NA_real_))
 })
 
 test_that("errors carry hvtiRimputation_<condition> classes", {

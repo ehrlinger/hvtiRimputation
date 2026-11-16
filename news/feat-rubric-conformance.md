@@ -11,6 +11,7 @@
   for mean imputation, which draws nothing) and `time`. Package-specific
   fields follow, as before.
 
-* `summary()` of an `impute_mean()` result gains a `method` column, so its
-  first four columns match `summary()` of an `impute_multiple()` result and
-  the two tables bind together. `fill_value` stays last.
+* `summary()` of an `impute_mean()` result gains a `method` column, and
+  `summary()` of an `impute_multiple()` result gains `fill_value`, always
+  `NA` because no single value speaks for every draw. The two tables now
+  have the same columns and bind with `rbind()`.

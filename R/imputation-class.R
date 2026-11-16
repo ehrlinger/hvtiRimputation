@@ -254,9 +254,9 @@ print.hvti_imputation <- function(x, ...) {
 #'
 #' @return A data frame with one row per imputed variable: the variable name,
 #'   the method (`"mean"`), the number of values filled, the proportion of
-#'   rows that is, and the value used to fill them. The first four columns
-#'   are the ones [summary.hvti_imputation_multi()] returns, so the two
-#'   tables bind together; `fill_value` is the one this method adds.
+#'   rows that is, and the value used to fill them. The columns are the
+#'   ones [summary.hvti_imputation_multi()] returns, where `fill_value` is
+#'   `NA`, so the two tables bind with [rbind()].
 #'
 #' @examples
 #' dat <- data.frame(age = c(50, 60, NA, 70), bmi = c(NA, 25, 27, 29))

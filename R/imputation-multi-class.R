@@ -127,17 +127,18 @@ print.hvti_imputation_multi <- function(x, ...) {
 #'
 #' Reduces the record to a per-variable table: which method each variable
 #' was imputed with, and how many of its values were filled. Unlike
-#' [summary.hvti_imputation()], there is no single `fill_value` column --
-#' each of the `m` draws can fill a given cell with a different value, which
-#' is the entire point of multiple imputation, so no single value speaks for
-#' all of them.
+#' [summary.hvti_imputation()], `fill_value` is always `NA`: each of the
+#' `m` draws can fill a given cell with a different value, which is the
+#' entire point of multiple imputation, so no single value speaks for all
+#' of them. The column is there, as a gap, so the two summaries have the
+#' same columns and bind with [rbind()].
 #'
 #' @param object An object of class `hvti_imputation_multi`.
 #' @param ... Ignored.
 #'
 #' @return A data frame with one row per imputed variable: the variable
-#'   name, the method used, the number of values filled, and the proportion
-#'   of rows that is.
+#'   name, the method used, the number of values filled, the proportion of
+#'   rows that is, and `fill_value` (`NA`, see above).
 #'
 #' @examples
 #' set.seed(42)
@@ -160,6 +161,7 @@ summary.hvti_imputation_multi <- function(object, ...) {
     method = unname(object$provenance$method[colnames(object$matrix)]),
     n_imputed = as.integer(n_imputed),
     prop_imputed = unname(n_imputed / nrow(object$matrix)),
+    fill_value = NA_real_,
     row.names = NULL,
     stringsAsFactors = FALSE
   )
