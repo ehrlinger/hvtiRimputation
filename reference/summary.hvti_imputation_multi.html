@@ -5,13 +5,13 @@ summary.hvti_imputation(), fill_value is always NA: each of the
 m draws can fill a given cell with a different value, which is the
 entire point of multiple imputation, so no single value speaks for all
 of them. The column is there, as a gap, so the two summaries have the
-same columns and bind with rbind()."><meta property="og:description" content="Reduces the record to a per-variable table: which method each variable
+same columns and bind with base::rbind()."><meta property="og:description" content="Reduces the record to a per-variable table: which method each variable
 was imputed with, and how many of its values were filled. Unlike
 summary.hvti_imputation(), fill_value is always NA: each of the
 m draws can fill a given cell with a different value, which is the
 entire point of multiple imputation, so no single value speaks for all
 of them. The column is there, as a gap, so the two summaries have the
-same columns and bind with rbind()."></head><body>
+same columns and bind with base::rbind()."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -60,7 +60,7 @@ was imputed with, and how many of its values were filled. Unlike
 <code>m</code> draws can fill a given cell with a different value, which is the
 entire point of multiple imputation, so no single value speaks for all
 of them. The column is there, as a gap, so the two summaries have the
-same columns and bind with <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">rbind()</a></code>.</p>
+same columns and bind with <code><a href="https://rdrr.io/r/base/cbind.html" class="external-link">base::rbind()</a></code>.</p>
     </div>
 
     <div class="section level2">

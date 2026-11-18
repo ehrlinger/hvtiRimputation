@@ -30,7 +30,7 @@ method (`"mean"`), the number of values filled, the proportion of rows
 that is, and the value used to fill them. The columns are the ones
 [`summary.hvti_imputation_multi()`](https://ehrlinger.github.io/hvtiRimputation/reference/summary.hvti_imputation_multi.md)
 returns, where `fill_value` is `NA`, so the two tables bind with
-[`rbind()`](https://rdrr.io/r/base/cbind.html).
+[`base::rbind()`](https://rdrr.io/r/base/cbind.html).
 
 ## Examples
 
