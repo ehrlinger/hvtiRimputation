@@ -2,7 +2,7 @@ Package: hvtiRimputation
 Title: Missing Value Imputation for the HVTI CORR Group
 Version: 0.1.4
 Authors@R:
-    person("John", "Ehrlinger", , "ehrlinj@ccf.org", role = c("aut", "cre"))
+    person("John", "Ehrlinger", , "john.ehrlinger@gmail.com", role = c("aut", "cre"))
 Description: Fills missing values in a data frame by a stated method and
     returns the filled data together with a row-level record of exactly
     which values were changed. Ports the mean-imputation behaviour of the
