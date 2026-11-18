@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,7 @@
 <span><span class="co">#&gt;   method:  mean (m = 1)</span></span>
 <span><span class="co">#&gt;   rows:    8</span></span>
 <span><span class="co">#&gt;   imputed: 3 variable(s), 5 row(s) touched</span></span>
-<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.3</span></span></code></pre></div>
+<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.4</span></span></code></pre></div>
 </div>
 <p><code>vars</code> has no default. <code>PROC STANDARD</code> with no <code>VAR</code> statement processes every numeric column, and we chose not to inherit that: an imputation that picks its own variable list is the mistake the record exists to catch. Here <code>outcome</code> is numeric and is left alone because we did not name it.</p>
 <p>The completed data, and the matrix that says which cells in it were filled:</p>
@@ -243,7 +243,7 @@
 <span><span class="co">#&gt; 66.83333 28.13333 52.85714 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $version</span></span>
-<span><span class="co">#&gt; [1] "0.1.3"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "0.1.4"</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="what-it-refuses">What it refuses<a class="anchor" aria-label="anchor" href="#what-it-refuses"></a>
 </h2>
@@ -280,7 +280,7 @@
 <span><span class="co">#&gt;   rows:    7</span></span>
 <span><span class="co">#&gt;   imputed: 3 variable(s), 4 row(s) touched</span></span>
 <span><span class="co">#&gt;   informed by: outcome</span></span>
-<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.3</span></span></code></pre></div>
+<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.4</span></span></code></pre></div>
 </div>
 <section class="level3"><h3 id="why-the-outcome-goes-in-predictors">Why the outcome goes in <code>predictors</code>
 <a class="anchor" aria-label="anchor" href="#why-the-outcome-goes-in-predictors"></a>

@@ -1,5 +1,88 @@
 # Changelog
 
+## hvtiRimputation 0.1.4
+
+- **[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  gains a required `predictors` argument.** Columns named there enter
+  the `mice` model and inform every draw, and are never imputed. For an
+  association analysis the outcome belongs there (time and status, for a
+  survival outcome); otherwise every filled value is drawn as though it
+  had no relationship to the outcome, and the estimated associations are
+  biased toward the null. `predictors = character(0)` is the explicit
+  outcome-free choice, defensible for a prediction model. A call without
+  `predictors` runs as before with a once-per-session warning (class
+  `hvtiRimputation_deprecated`); in the next release it is an error.
+  Each predictor must be fully observed, plain numeric, factor or
+  logical, not constant, and not also in `vars`.
+
+- [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  validates `maxit` as a single positive whole number, instead of
+  failing inside `mice` with an error about array lengths.
+
+- [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  refuses an all-missing or constant `vars` column before calling
+  `mice`, and when `mice` drops a column as collinear it reports the
+  reason from `mice`’s `loggedEvents` rather than calling it a bug in
+  this package. A predictor `mice` drops draws a warning.
+
+- [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
+  keeps a fully observed integer column integer, and says so (through a
+  message `options(hvti.quiet = TRUE)` silences) when it widens a filled
+  integer column to double.
+
+- A column in `vars` or `predictors` that looks like a row identifier
+  (named `id`, or ending `_id` or `.id`, with every observed value
+  distinct) draws a warning of class `hvtiRimputation_id_like`.
+
+- The accessors refuse a non-imputation object with a message naming
+  what they expected, instead of a bare
+  [`stopifnot()`](https://rdrr.io/r/base/stopifnot.html) failure.
+
+- `predictors` is the last formal of
+  [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md),
+  so a call written before it existed keeps its positional meaning. One
+  variable in `vars` is enough when `predictors` supplies a second
+  column. A predictor `mice` drops from a single model (linearly
+  dependent among the rows where that model’s target is observed) draws
+  a warning naming the column, the target and the number of fits, and
+  every event `mice` logged is kept in the provenance as
+  `logged_events`.
+
+- Every error now carries a condition class, `hvtiRimputation_error`
+  plus a specific one: `hvtiRimputation_invalid_input` for an argument
+  or column refused before anything is filled,
+  `hvtiRimputation_unfilled` for a value the record would mark filled
+  that is still missing. Catch by class rather than by message text.
+  Messages are unchanged.
+
+- [`imputation_provenance()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
+  opens with the seven fields the hvtiR packages share, in the same
+  order and types from both
+  [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
+  and
+  [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md):
+  `package`, `version`, `sha` (new; the install’s commit when recorded,
+  else `NA`), `method`, `seed`, `rng_kind` (new; `NA` for mean
+  imputation, which draws nothing) and `time`. Package-specific fields
+  follow, as before.
+
+- [`summary()`](https://rdrr.io/r/base/summary.html) of an
+  [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
+  result gains a `method` column, and
+  [`summary()`](https://rdrr.io/r/base/summary.html) of an
+  [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+  result gains `fill_value`, always `NA` because no single value speaks
+  for every draw. The two tables now have the same columns and bind with
+  [`rbind()`](https://rdrr.io/r/base/cbind.html).
+
+- The package description quotes ‘SAS’ and spells out CORR and HVTI.
+
+- [`?summary.hvti_imputation`](https://ehrlinger.github.io/hvtiRimputation/reference/summary.hvti_imputation.md)
+  and
+  [`?summary.hvti_imputation_multi`](https://ehrlinger.github.io/hvtiRimputation/reference/summary.hvti_imputation_multi.md)
+  link [`rbind()`](https://rdrr.io/r/base/cbind.html) to base R’s, not
+  to `mice`’s.
+
 ## hvtiRimputation 0.1.3
 
 - `DESCRIPTION` now declares the Quarto command line tool in

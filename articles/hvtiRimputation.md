@@ -82,7 +82,7 @@ out
 #>   method:  mean (m = 1)
 #>   rows:    8
 #>   imputed: 3 variable(s), 5 row(s) touched
-#>   produced by hvtiRimputation 0.1.3
+#>   produced by hvtiRimputation 0.1.4
 ```
 
 `vars` has no default. `PROC STANDARD` with no `VAR` statement processes
@@ -247,7 +247,7 @@ prov[c("method", "m", "vars", "cc_vars", "fill_values", "version")]
 #> 66.83333 28.13333 52.85714 
 #> 
 #> $version
-#> [1] "0.1.3"
+#> [1] "0.1.4"
 ```
 
 ## What it refuses
@@ -306,7 +306,7 @@ mi
 #>   rows:    7
 #>   imputed: 3 variable(s), 4 row(s) touched
 #>   informed by: outcome
-#>   produced by hvtiRimputation 0.1.3
+#>   produced by hvtiRimputation 0.1.4
 ```
 
 ### Why the outcome goes in `predictors`
