@@ -23,7 +23,7 @@ was imputed with, and how many of its values were filled. Unlike
 \code{m} draws can fill a given cell with a different value, which is the
 entire point of multiple imputation, so no single value speaks for all
 of them. The column is there, as a gap, so the two summaries have the
-same columns and bind with \code{\link[=rbind]{rbind()}}.
+same columns and bind with \code{\link[base:rbind]{base::rbind()}}.
 }
 \examples{
 set.seed(42)

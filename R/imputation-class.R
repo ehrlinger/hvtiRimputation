@@ -256,7 +256,7 @@ print.hvti_imputation <- function(x, ...) {
 #'   the method (`"mean"`), the number of values filled, the proportion of
 #'   rows that is, and the value used to fill them. The columns are the
 #'   ones [summary.hvti_imputation_multi()] returns, where `fill_value` is
-#'   `NA`, so the two tables bind with [rbind()].
+#'   `NA`, so the two tables bind with [base::rbind()].
 #'
 #' @examples
 #' dat <- data.frame(age = c(50, 60, NA, 70), bmi = c(NA, 25, 27, 29))
