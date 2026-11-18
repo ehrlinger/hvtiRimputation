@@ -84,8 +84,8 @@ Useful links:
 
 ## Author
 
-**Maintainer**: John Ehrlinger <ehrlinj@ccf.org>
+**Maintainer**: John Ehrlinger <john.ehrlinger@gmail.com>
 
 Authors:
 
-- John Ehrlinger <ehrlinj@ccf.org>
+- John Ehrlinger <john.ehrlinger@gmail.com>
