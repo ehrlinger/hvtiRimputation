@@ -131,7 +131,7 @@ print.hvti_imputation_multi <- function(x, ...) {
 #' `m` draws can fill a given cell with a different value, which is the
 #' entire point of multiple imputation, so no single value speaks for all
 #' of them. The column is there, as a gap, so the two summaries have the
-#' same columns and bind with [rbind()].
+#' same columns and bind with [base::rbind()].
 #'
 #' @param object An object of class `hvti_imputation_multi`.
 #' @param ... Ignored.

@@ -6,7 +6,7 @@
 \alias{hvtiRimputation-package}
 \title{hvtiRimputation: Missing Value Imputation for the HVTI CORR Group}
 \description{
-Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the Cleveland Clinic CORR group's SAS library -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub' macro that wraps it. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.
+Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the 'SAS' library of the Cardiovascular Outcomes, Registries and Research (CORR) group of the Heart, Vascular and Thoracic Institute (HVTI) at the Cleveland Clinic -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub' macro that wraps it. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.
 }
 \details{
 \strong{A data frame in, a data frame and a record out.} That is the whole

@@ -6,10 +6,12 @@ Authors@R:
 Description: Fills missing values in a data frame by a stated method and
     returns the filled data together with a row-level record of exactly
     which values were changed. Ports the mean-imputation behaviour of the
-    Cleveland Clinic CORR group's SAS library -- 'PROC STANDARD' with
-    'REPLACE', and the 'imputsub' macro that wraps it. The package knows
-    nothing about the warehouse, a build, or any study: the input is a data
-    frame and the output is a data frame plus a record.
+    'SAS' library of the Cardiovascular Outcomes, Registries and Research
+    (CORR) group of the Heart, Vascular and Thoracic Institute (HVTI) at the
+    Cleveland Clinic -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub'
+    macro that wraps it. The package knows nothing about the warehouse, a
+    build, or any study: the input is a data frame and the output is a data
+    frame plus a record.
 License: GPL-3
 URL: https://github.com/ehrlinger/hvtiRimputation, https://ehrlinger.github.io/hvtiRimputation/
 BugReports: https://github.com/ehrlinger/hvtiRimputation/issues
