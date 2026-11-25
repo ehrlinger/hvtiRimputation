@@ -43,7 +43,7 @@
 #' simply had no way to ask. We are still changing our processes to be
 #' correct, and a required argument is how the choice gets made, and made
 #' visibly, at every call site. A call without `predictors` still runs, as
-#' before, with a once-per-session warning; in the next release it is an
+#' before, with a once-per-session warning; a later release will make it an
 #' error.
 #'
 #' `impute_multiple()` trusts the class of each `vars` column as the sole
@@ -67,7 +67,8 @@
 #'   is where the outcome goes (time and status, for a survival outcome);
 #'   see Details for why. Each column must be fully observed, plain numeric,
 #'   factor or logical, and not also in `vars`. Omitting the argument runs
-#'   as `character(0)` with a deprecation warning, for this release only.
+#'   as `character(0)` with a deprecation warning, until a later release
+#'   makes it an error.
 #' @param method `NULL` (the default) uses `mice`'s own per-column method
 #'   selection for every `vars` column. A named character vector overrides
 #'   specific columns by name; every column not named keeps its default.
@@ -222,7 +223,7 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
         "(for survival, both time and status), or `predictors = ",
         "character(0)` to choose an outcome-free imputation on purpose, as ",
         "a prediction model may. We are still changing our processes to be ",
-        "correct: omitting `predictors` becomes an error in the next ",
+        "correct: omitting `predictors` becomes an error in a later ",
         "release. This warning is shown once per session."
       ),
       class = c("hvtiRimputation_deprecated", "deprecatedWarning")

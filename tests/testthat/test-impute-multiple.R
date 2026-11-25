@@ -378,7 +378,7 @@ test_that("the deprecation warning gives the why and the fix", {
   withr::defer(rm(list = ls(.hvti_state), envir = .hvti_state))
   expect_warning(
     impute_multiple(dat, vars = c("x", "z"), m = 1, maxit = 1),
-    "toward the null.*time and status.*character\\(0\\).*error in the next"
+    "toward the null.*time and status.*character\\(0\\).*error in a later"
   )
 })
 

@@ -53,7 +53,8 @@ that no column outside \code{vars} informs. For an association analysis this
 is where the outcome goes (time and status, for a survival outcome);
 see Details for why. Each column must be fully observed, plain numeric,
 factor or logical, and not also in \code{vars}. Omitting the argument runs
-as \code{character(0)} with a deprecation warning, for this release only.}
+as \code{character(0)} with a deprecation warning, until a later release
+makes it an error.}
 }
 \value{
 An object of class \code{hvti_imputation_multi}.
@@ -108,7 +109,7 @@ the outcome was itself in \code{vars}. We did not choose that; the function
 simply had no way to ask. We are still changing our processes to be
 correct, and a required argument is how the choice gets made, and made
 visibly, at every call site. A call without \code{predictors} still runs, as
-before, with a once-per-session warning; in the next release it is an
+before, with a once-per-session warning; a later release will make it an
 error.
 
 \code{impute_multiple()} trusts the class of each \code{vars} column as the sole
