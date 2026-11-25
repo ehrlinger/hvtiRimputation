@@ -52,8 +52,8 @@ no default}; \code{character(0)} is the explicit choice of an imputation
 that no column outside \code{vars} informs. For an association analysis this
 is where the outcome goes (time and status, for a survival outcome);
 see Details for why. Each column must be fully observed, plain numeric,
-factor or logical, and not also in \code{vars}. Omitting the argument runs
-as \code{character(0)} with a deprecation warning, for this release only.}
+factor or logical, and not also in \code{vars}. Omitting the argument is an
+error.}
 }
 \value{
 An object of class \code{hvti_imputation_multi}.
@@ -107,9 +107,8 @@ purpose. Before
 the outcome was itself in \code{vars}. We did not choose that; the function
 simply had no way to ask. We are still changing our processes to be
 correct, and a required argument is how the choice gets made, and made
-visibly, at every call site. A call without \code{predictors} still runs, as
-before, with a once-per-session warning; in the next release it is an
-error.
+visibly, at every call site. In 0.1.4 a call without \code{predictors} still
+ran outcome-free, with a warning; from 0.1.5 it is an error.
 
 \code{impute_multiple()} trusts the class of each \code{vars} column as the sole
 signal for what kind of variable it is, and does not re-derive that from

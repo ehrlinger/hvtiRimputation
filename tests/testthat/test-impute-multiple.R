@@ -353,32 +353,19 @@ test_that("predictors are never imputed and are not in the record", {
   expect_false("y" %in% names(imputation_provenance(out)$method))
 })
 
-test_that("omitting predictors warns once per session and runs as before", {
+test_that("omitting predictors is an error", {
   dat <- outcome_fixture()
-  rm(list = ls(.hvti_state), envir = .hvti_state)
-  withr::defer(rm(list = ls(.hvti_state), envir = .hvti_state))
-
-  expect_warning(
-    old <- impute_multiple(dat, vars = c("x", "z"), m = 2, maxit = 2),
-    class = "hvtiRimputation_deprecated"
-  )
-  expect_warning(
+  expect_error(
     impute_multiple(dat, vars = c("x", "z"), m = 2, maxit = 2),
-    NA
+    class = "hvtiRimputation_invalid_input"
   )
-  explicit <- impute_multiple(dat, vars = c("x", "z"), m = 2,
-                              predictors = character(0), maxit = 2)
-  expect_identical(imputed_data(old, imputation = "long"),
-                   imputed_data(explicit, imputation = "long"))
 })
 
-test_that("the deprecation warning gives the why and the fix", {
+test_that("the missing-predictors error gives the why and the fix", {
   dat <- outcome_fixture()
-  rm(list = ls(.hvti_state), envir = .hvti_state)
-  withr::defer(rm(list = ls(.hvti_state), envir = .hvti_state))
-  expect_warning(
+  expect_error(
     impute_multiple(dat, vars = c("x", "z"), m = 1, maxit = 1),
-    "toward the null.*time and status.*character\\(0\\).*error in the next"
+    "toward the null.*time and status.*character\\(0\\)"
   )
 })
 
@@ -495,14 +482,12 @@ test_that("a predictor mice drops draws a warning", {
 
 test_that("an old positional call still reads its 4th argument as cc_vars", {
   dat <- outcome_fixture()
-  rm(list = ls(.hvti_state), envir = .hvti_state)
-  withr::defer(rm(list = ls(.hvti_state), envir = .hvti_state))
 
   # Before `predictors` existed, the 4th positional argument was `cc_vars`.
-  expect_warning(
-    old <- impute_multiple(dat, c("x", "z"), 2, "y", maxit = 1),
-    class = "hvtiRimputation_deprecated"
-  )
+  # Such a call now has to add `predictors`, but by name, so the 4th
+  # position must still mean `cc_vars`.
+  old <- impute_multiple(dat, c("x", "z"), 2, "y", maxit = 1,
+                         predictors = character(0))
   expect_identical(imputation_provenance(old)$cc_vars, "y")
   expect_identical(imputation_provenance(old)$predictors, character(0))
   expect_identical(complete_case_pass(old), rep(TRUE, nrow(dat)))

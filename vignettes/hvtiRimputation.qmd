@@ -40,8 +40,8 @@ the input) stays with you.
 
 This vignette is for the CORR biostatistician who already knows R and has
 used the SAS macros. It walks one small synthetic example from the fill to the
-attrition columns a CONSORT diagram wants, then shows the multiple-imputation
-prototype.
+attrition columns a CONSORT diagram wants, then shows multiple
+imputation.
 
 ## Installation
 
@@ -180,12 +180,11 @@ column whose mean is not finite, a classed numeric such as `integer64` or
 warning. A refusal costs you a line of code; a wrong record costs you an audit
 nobody can pass, because nothing downstream can detect it.
 
-## Multiple imputation (prototype)
+## Multiple imputation
 
 `impute_multiple()` is the R form of `PROC MI`, which the `mult_imput` macro
 wraps. It draws `m` completed datasets with `mice` and returns the same shape
-of record. It is a prototype: designed and tested, not yet hardened or
-released, and it does **not** pool. Fitting a model to each draw and combining
+of record. It is newer than `impute_mean()`, and it does **not** pool. Fitting a model to each draw and combining
 the results by Rubin's rules is still your job.
 
 It is a separate function from `impute_mean()` on purpose. The two are

@@ -6,7 +6,7 @@
 \alias{hvtiRimputation-package}
 \title{hvtiRimputation: Missing Value Imputation for the HVTI CORR Group}
 \description{
-Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the 'SAS' library of the Cardiovascular Outcomes, Registries and Research (CORR) group of the Heart, Vascular and Thoracic Institute (HVTI) at the Cleveland Clinic -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub' macro that wraps it. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.
+Fills missing values in a data frame by a stated method and returns the filled data together with a row-level record of exactly which values were changed. Ports the mean-imputation behaviour of the 'SAS' library of the Cardiovascular Outcomes, Registries and Research (CORR) group of the Heart, Vascular and Thoracic Institute (HVTI) at the Cleveland Clinic -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub' macro that wraps it. Multiple imputation, the counterpart of 'PROC MI', is drawn with 'mice' and is not pooled. The package knows nothing about the warehouse, a build, or any study: the input is a data frame and the output is a data frame plus a record.
 }
 \details{
 \strong{A data frame in, a data frame and a record out.} That is the whole
@@ -14,9 +14,10 @@ scope. The package knows nothing about the warehouse, the build, or any
 study; any manifest or provenance context belongs to the caller.
 
 \strong{Two entry points, never one.} \code{\link[=impute_mean]{impute_mean()}} fills each missing value
-with its variable's mean and returns one completed dataset (\verb{PROC STANDARD ... REPLACE}, which the \code{imputsub} macro wraps). \code{impute_multiple()} will
-generate \code{m} completed datasets for use with a pooling step
-(\verb{PROC MI} / \code{mult_imput}); it is designed but not yet implemented.
+with its variable's mean and returns one completed dataset (\verb{PROC STANDARD ... REPLACE}, which the \code{imputsub} macro wraps). \code{\link[=impute_multiple]{impute_multiple()}}
+draws \code{m} completed datasets with \code{mice} (\verb{PROC MI}, which the
+\code{mult_imput} macro wraps). It does not pool: combining the per-draw
+results by Rubin's rules is still the caller's job.
 
 There is deliberately no single \code{impute()} with a \verb{method=} argument. 223
 studies in the corpus call single mean imputation, 326 call multiple
@@ -28,7 +29,7 @@ functions cannot be confused by omission.
 
 \strong{Nothing inherits a SAS default.} \verb{PROC STANDARD} with no \code{VAR} statement
 processes every numeric column, and \code{impute_mean()} requires \code{vars}
-anyway; \code{impute_multiple()} will require \code{m}. The reason is that the corpus
+anyway; \code{\link[=impute_multiple]{impute_multiple()}} requires \code{m}. The reason is that the corpus
 has no single answer to inherit. Five macro names exist in copies declaring
 different \code{NIMPUTE} defaults and three of them straddle 1, so a plurality
 default would silently convert a single-imputation call site into multiple

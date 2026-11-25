@@ -1,3 +1,22 @@
+# hvtiRimputation 0.1.5
+
+* **The `predictors` deprecation announced in 0.1.4 takes effect.** 0.1.4
+  made `predictors` a required argument of `impute_multiple()` and said a
+  call without it would warn for one release and then be an error. This is
+  that release: such a call now fails with an error of class
+  `hvtiRimputation_invalid_input`, where 0.1.4 ran it outcome-free with a
+  once-per-session warning. To keep the outcome-free behaviour, pass
+  `predictors = character(0)`; for an association analysis, pass the outcome
+  instead. The warning class `hvtiRimputation_deprecated` is gone with the
+  warning.
+
+* The maintainer address is `john.ehrlinger@gmail.com`, as in the rest of the
+  hvtiR family.
+
+* The package help, README, vignette and `Description` no longer call
+  `impute_multiple()` unbuilt or unreleased. It has shipped since 0.1.1; the
+  README's status line said v0.1.0 and its function table left it out.
+
 # hvtiRimputation 0.1.4
 
 * **`impute_multiple()` gains a required `predictors` argument.** Columns

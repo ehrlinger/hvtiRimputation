@@ -1,6 +1,7 @@
 Package: hvtiRimputation
 Title: Missing Value Imputation for the HVTI CORR Group
-Version: 0.1.4
+Version: 0.1.5
+Date: 2026-11-25
 Authors@R:
     person("John", "Ehrlinger", , "john.ehrlinger@gmail.com", role = c("aut", "cre"))
 Description: Fills missing values in a data frame by a stated method and
@@ -9,9 +10,10 @@ Description: Fills missing values in a data frame by a stated method and
     'SAS' library of the Cardiovascular Outcomes, Registries and Research
     (CORR) group of the Heart, Vascular and Thoracic Institute (HVTI) at the
     Cleveland Clinic -- 'PROC STANDARD' with 'REPLACE', and the 'imputsub'
-    macro that wraps it. The package knows nothing about the warehouse, a
-    build, or any study: the input is a data frame and the output is a data
-    frame plus a record.
+    macro that wraps it. Multiple imputation, the counterpart of 'PROC
+    MI', is drawn with 'mice' and is not pooled. The package knows nothing
+    about the warehouse, a build, or any study: the input is a data frame
+    and the output is a data frame plus a record.
 License: GPL-3
 URL: https://github.com/ehrlinger/hvtiRimputation, https://ehrlinger.github.io/hvtiRimputation/
 BugReports: https://github.com/ehrlinger/hvtiRimputation/issues
@@ -33,4 +35,4 @@ SystemRequirements: Quarto command line tool
     (<https://github.com/quarto-dev/quarto-cli>)
 Config/testthat/edition: 3
 Roxygen: list(markdown = TRUE)
-Config/roxygen2/version: 8.1.0
+Config/roxygen2/version: 8.1.1
