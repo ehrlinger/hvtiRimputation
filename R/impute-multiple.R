@@ -42,9 +42,8 @@
 #' the outcome was itself in `vars`. We did not choose that; the function
 #' simply had no way to ask. We are still changing our processes to be
 #' correct, and a required argument is how the choice gets made, and made
-#' visibly, at every call site. A call without `predictors` still runs, as
-#' before, with a once-per-session warning; a later release will make it an
-#' error.
+#' visibly, at every call site. In 0.1.4 a call without `predictors` still
+#' ran outcome-free, with a warning; from 0.1.5 it is an error.
 #'
 #' `impute_multiple()` trusts the class of each `vars` column as the sole
 #' signal for what kind of variable it is, and does not re-derive that from
@@ -66,9 +65,8 @@
 #'   that no column outside `vars` informs. For an association analysis this
 #'   is where the outcome goes (time and status, for a survival outcome);
 #'   see Details for why. Each column must be fully observed, plain numeric,
-#'   factor or logical, and not also in `vars`. Omitting the argument runs
-#'   as `character(0)` with a deprecation warning, until a later release
-#'   makes it an error.
+#'   factor or logical, and not also in `vars`. Omitting the argument is an
+#'   error.
 #' @param method `NULL` (the default) uses `mice`'s own per-column method
 #'   selection for every `vars` column. A named character vector overrides
 #'   specific columns by name; every column not named keeps its default.
@@ -212,23 +210,18 @@ impute_multiple <- function(data, vars, m, cc_vars = names(data),
 
   vars <- validate_impute_vars(data, vars, arg = "vars")
   if (missing(predictors)) {
-    warn_once(
-      "predictors_missing",
-      paste0(
-        "impute_multiple() was called without `predictors`. It ran as ",
-        "before, with no column outside `vars` informing the draws, so the ",
-        "outcome shaped the imputations only if it is itself in `vars`. ",
-        "For an association analysis that biases the estimated ",
-        "associations toward the null. Pass the outcome as `predictors` ",
-        "(for survival, both time and status), or `predictors = ",
-        "character(0)` to choose an outcome-free imputation on purpose, as ",
-        "a prediction model may. We are still changing our processes to be ",
-        "correct: omitting `predictors` becomes an error in a later ",
-        "release. This warning is shown once per session."
-      ),
-      class = c("hvtiRimputation_deprecated", "deprecatedWarning")
+    abort(
+      "impute_multiple() needs `predictors`, the columns that inform the ",
+      "draws without being imputed. Without them no column outside `vars` ",
+      "informs the draws, so the outcome shapes the imputations only if it ",
+      "is itself in `vars`, and for an association analysis that biases ",
+      "the estimated associations toward the null. Pass the outcome as ",
+      "`predictors` (for survival, both time and status), or `predictors = ",
+      "character(0)` to choose an outcome-free imputation on purpose, as a ",
+      "prediction model may. Until 0.1.5 a call without `predictors` ran ",
+      "outcome-free with a warning.",
+      call. = FALSE
     )
-    predictors <- character(0)
   }
   predictors <- validate_predictors(data, predictors, vars)
   if (length(vars) + length(predictors) < 2L) {

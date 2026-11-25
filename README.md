@@ -21,7 +21,7 @@
 ## Status
 
 **v0.1.5.** Single mean imputation is the settled half; multiple imputation
-is newer, does not pool, and its interface is still moving.
+is newer and does not pool.
 
 | Piece | State |
 |---|---|
@@ -29,7 +29,7 @@ is newer, does not pool, and its interface is still moving.
 | Refusal to impute a classed numeric (`integer64`, `Date`), a non-finite mean, or a frame with duplicated column names | ✅ implemented |
 | The record: per-cell matrix, generated indicators, provenance | ✅ implemented |
 | `imputed_any()` / `complete_case_pass()` — the row-level attrition columns | ✅ implemented |
-| `impute_multiple()` — multiple imputation (`PROC MI`, `mult_imput`) | ✅ implemented, interface still moving: a call without `predictors` is deprecated and will become an error |
+| `impute_multiple()` — multiple imputation (`PROC MI`, `mult_imput`) | ✅ implemented, no pooling; `predictors` is required |
 | Pooling (Rubin's rules) | ⛔ deferred — multiple imputation is only multiple imputation if the results are pooled, and that is separate work with its own verification |
 | The CONSORT annotation stage | ⛔ blocked on [hvtiPlotR#131](https://github.com/ehrlinger/hvtiPlotR/issues/131) |
 | `BY`-group means | ⛔ not measured, not built |

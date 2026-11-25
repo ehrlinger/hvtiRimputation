@@ -1,11 +1,11 @@
 # hvtiRimputation 0.1.5
 
-A housekeeping release: no change to what any function computes.
-
-* Calling `impute_multiple()` without `predictors` still runs, with the
-  once-per-session deprecation warning. The 0.1.4 notes said it would be an
-  error in the next release. It is not one yet, and neither the help page
-  nor the warning names a release for it any more.
+* **Calling `impute_multiple()` without `predictors` is now an error
+  (breaking)**, of class `hvtiRimputation_invalid_input`, as the 0.1.4 notes
+  said it would be. In 0.1.4 such a call ran outcome-free with a
+  once-per-session warning. To keep that behaviour, pass
+  `predictors = character(0)`; for an association analysis, pass the outcome
+  instead. The warning class `hvtiRimputation_deprecated` is gone.
 
 * The maintainer address is `john.ehrlinger@gmail.com`, as in the rest of the
   hvtiR family.
