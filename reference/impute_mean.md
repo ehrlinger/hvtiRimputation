@@ -45,10 +45,11 @@ for the full shape.
 This is the R form of `PROC STANDARD ... REPLACE` with no
 `MEAN=`/`STD=`, which is what the `imputsub` macro wraps. It is
 **single** imputation: one completed dataset, and no between-imputation
-variance. Multiple imputation is not yet implemented; see the README. It
-will be a separate function, because a function that quietly does one
-method when the caller expected the other is a worse failure than no
-function at all.
+variance. Multiple imputation is
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md),
+a separate function, because a function that quietly does one method
+when the caller expected the other is a worse failure than no function
+at all.
 
 **An integer column comes back double.** The fill value is the mean, and
 a mean is rarely a whole number, so a filled integer column is widened
@@ -93,10 +94,9 @@ decision.
 [`imputed_any()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
 and
 [`complete_case_pass()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md)
-for the two row-level columns the attrition record consumes. Multiple
-imputation
-([`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md))
-is designed but not yet implemented; see the README.
+for the two row-level columns the attrition record consumes.
+[`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
+for multiple imputation.
 
 ## Examples
 

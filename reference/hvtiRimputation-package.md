@@ -6,9 +6,10 @@ were changed. Ports the mean-imputation behaviour of the 'SAS' library
 of the Cardiovascular Outcomes, Registries and Research (CORR) group of
 the Heart, Vascular and Thoracic Institute (HVTI) at the Cleveland
 Clinic – 'PROC STANDARD' with 'REPLACE', and the 'imputsub' macro that
-wraps it. The package knows nothing about the warehouse, a build, or any
-study: the input is a data frame and the output is a data frame plus a
-record.
+wraps it. Multiple imputation, the counterpart of 'PROC MI', is drawn
+with 'mice' and is not pooled. The package knows nothing about the
+warehouse, a build, or any study: the input is a data frame and the
+output is a data frame plus a record.
 
 ## Details
 
@@ -22,8 +23,9 @@ fills each missing value with its variable's mean and returns one
 completed dataset (`PROC STANDARD ... REPLACE`, which the `imputsub`
 macro wraps).
 [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
-will generate `m` completed datasets for use with a pooling step
-(`PROC MI` / `mult_imput`); it is designed but not yet implemented.
+draws `m` completed datasets with `mice` (`PROC MI`, which the
+`mult_imput` macro wraps). It does not pool: combining the per-draw
+results by Rubin's rules is still the caller's job.
 
 There is deliberately no single `impute()` with a `method=` argument.
 223 studies in the corpus call single mean imputation, 326 call multiple
@@ -38,7 +40,7 @@ statement processes every numeric column, and
 [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md)
 requires `vars` anyway;
 [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
-will require `m`. The reason is that the corpus has no single answer to
+requires `m`. The reason is that the corpus has no single answer to
 inherit. Five macro names exist in copies declaring different `NIMPUTE`
 defaults and three of them straddle 1, so a plurality default would
 silently convert a single-imputation call site into multiple imputation

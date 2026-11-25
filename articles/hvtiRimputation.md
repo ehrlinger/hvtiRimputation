@@ -24,8 +24,8 @@ definitions, provenance of the input) stays with you.
 
 This vignette is for the CORR biostatistician who already knows R and
 has used the SAS macros. It walks one small synthetic example from the
-fill to the attrition columns a CONSORT diagram wants, then shows the
-multiple-imputation prototype.
+fill to the attrition columns a CONSORT diagram wants, then shows
+multiple imputation.
 
 ## Installation
 
@@ -82,7 +82,7 @@ out
 #>   method:  mean (m = 1)
 #>   rows:    8
 #>   imputed: 3 variable(s), 5 row(s) touched
-#>   produced by hvtiRimputation 0.1.4
+#>   produced by hvtiRimputation 0.1.5
 ```
 
 `vars` has no default. `PROC STANDARD` with no `VAR` statement processes
@@ -247,7 +247,7 @@ prov[c("method", "m", "vars", "cc_vars", "fill_values", "version")]
 #> 66.83333 28.13333 52.85714 
 #> 
 #> $version
-#> [1] "0.1.4"
+#> [1] "0.1.5"
 ```
 
 ## What it refuses
@@ -273,12 +273,13 @@ Each is an error, not a warning. A refusal costs you a line of code; a
 wrong record costs you an audit nobody can pass, because nothing
 downstream can detect it.
 
-## Multiple imputation (prototype)
+## Multiple imputation
 
 [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
 is the R form of `PROC MI`, which the `mult_imput` macro wraps. It draws
 `m` completed datasets with `mice` and returns the same shape of record.
-It is a prototype: designed and tested, not yet hardened or released,
+It is newer than
+[`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md),
 and it does **not** pool. Fitting a model to each draw and combining the
 results by Rubin’s rules is still your job.
 
@@ -306,7 +307,7 @@ mi
 #>   rows:    7
 #>   imputed: 3 variable(s), 4 row(s) touched
 #>   informed by: outcome
-#>   produced by hvtiRimputation 0.1.4
+#>   produced by hvtiRimputation 0.1.5
 ```
 
 ### Why the outcome goes in `predictors`

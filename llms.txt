@@ -13,7 +13,8 @@
 
 ## Status
 
-**v0.1.0. Single mean imputation only.**
+**v0.1.5.** Single mean imputation is the settled half; multiple
+imputation is newer and does not pool.
 
 | Piece | State |
 |----|----|
@@ -21,7 +22,7 @@
 | Refusal to impute a classed numeric (`integer64`, `Date`), a non-finite mean, or a frame with duplicated column names | ✅ implemented |
 | The record: per-cell matrix, generated indicators, provenance | ✅ implemented |
 | [`imputed_any()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md) / [`complete_case_pass()`](https://ehrlinger.github.io/hvtiRimputation/reference/imputation-accessors.md) — the row-level attrition columns | ✅ implemented |
-| [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md) — multiple imputation (`PROC MI`, `mult_imput`) | 🔬 prototype (`dev/specs/2026-09-23-impute-multiple-design.md`); not hardened or released |
+| [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md) — multiple imputation (`PROC MI`, `mult_imput`) | ✅ implemented, no pooling; `predictors` is required |
 | Pooling (Rubin’s rules) | ⛔ deferred — multiple imputation is only multiple imputation if the results are pooled, and that is separate work with its own verification |
 | The CONSORT annotation stage | ⛔ blocked on [hvtiPlotR#131](https://github.com/ehrlinger/hvtiPlotR/issues/131) |
 | `BY`-group means | ⛔ not measured, not built |
@@ -122,6 +123,7 @@ imputation_indicators(out, prefix = "ms_")  # ms_age, ms_bmi, as SAS named them
 | Function | What it does |
 |----|----|
 | [`impute_mean()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_mean.md) | Fill each missing value with its variable’s mean. One completed dataset. |
+| [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md) | Draw `m` completed datasets with `mice`. No pooling. |
 
 ### Reading the record
 
@@ -145,8 +147,8 @@ imputation_indicators(out, prefix = "ms_")  # ms_age, ms_bmi, as SAS named them
 imputation, and 18 call both. They are different methods with different
 inferential properties.
 
-So this package will expose two functions rather than one function with
-a `method=` argument. A single `impute()` that quietly does one when the
+So this package exposes two functions rather than one function with a
+`method=` argument. A single `impute()` that quietly does one when the
 caller expected the other is a worse failure than no package at all, and
 a `method=` argument with a default is exactly that failure wearing an
 argument name. Two functions cannot be confused by omission.
@@ -157,7 +159,7 @@ argument name. Two functions cannot be confused by omission.
 requires `vars`, though `PROC STANDARD` with no `VAR` statement
 processes every numeric column.
 [`impute_multiple()`](https://ehrlinger.github.io/hvtiRimputation/reference/impute_multiple.md)
-will require `m`, though the macros carry `NIMPUTE` defaults.
+requires `m`, though the macros carry `NIMPUTE` defaults.
 
 The reason is that **there is no “the SAS default” to inherit.** Five
 macro names exist in copies declaring different `NIMPUTE` defaults, and

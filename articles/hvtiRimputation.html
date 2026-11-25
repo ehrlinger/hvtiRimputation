@@ -7,8 +7,8 @@
 <title>Getting Started with hvtiRimputation • hvtiRimputation</title>
 <script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Outfit-0.4.10/font.css" rel="stylesheet">
-<link href="../deps/Fira_Code-0.4.10/font.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Outfit-0.5.0/font.css" rel="stylesheet">
+<link href="../deps/Fira_Code-0.5.0/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><script src="hvtiRimputation_files/libs/quarto-html/popper.min.js"></script><script src="hvtiRimputation_files/libs/quarto-html/tippy.umd.min.js"></script><link href="hvtiRimputation_files/libs/quarto-html/tippy.css" rel="stylesheet">
@@ -24,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">hvtiRimputation</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -63,7 +63,7 @@
       <h1>Getting Started with hvtiRimputation</h1>
 
       <p class="author">John Ehrlinger</p>
-      <p class="date">2026-11-18</p>
+      <p class="date">2026-11-25</p>
 
       <small class="dont-index">Source: <a href="https://github.com/ehrlinger/hvtiRimputation/blob/main/vignettes/hvtiRimputation.qmd" class="external-link"><code>vignettes/hvtiRimputation.qmd</code></a></small>
       <div class="d-none name"><code></code></div>
@@ -79,7 +79,7 @@
 <p>Most of us have filled a missing covariate with its mean and moved on. In SAS that was <code>PROC STANDARD ... REPLACE</code>, usually through the <code>imputsub</code> macro, and the job ended with a complete dataset and no trace of which values had been missing. Months later a reviewer asks how many patients were in the model only because a covariate was filled in, or whether one particular patient’s value was observed, and the dataset can’t tell you.</p>
 <p><code>hvtiRimputation</code> fills missing values by a stated method and hands back the filled data together with a record of exactly what it changed. The record is a logical matrix with one row per row of your data and one column per imputed variable, <code>TRUE</code> where a value was filled. Every count, indicator and attrition column in the package is read from that matrix.</p>
 <p>The scope is deliberately small. A data frame goes in, and a data frame and a record come out. The package knows nothing about the warehouse, the build or any study, so the study context (manifests, cohort definitions, provenance of the input) stays with you.</p>
-<p>This vignette is for the CORR biostatistician who already knows R and has used the SAS macros. It walks one small synthetic example from the fill to the attrition columns a CONSORT diagram wants, then shows the multiple-imputation prototype.</p>
+<p>This vignette is for the CORR biostatistician who already knows R and has used the SAS macros. It walks one small synthetic example from the fill to the attrition columns a CONSORT diagram wants, then shows multiple imputation.</p>
 </section><section class="level2"><h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="cell">
@@ -125,7 +125,7 @@
 <span><span class="co">#&gt;   method:  mean (m = 1)</span></span>
 <span><span class="co">#&gt;   rows:    8</span></span>
 <span><span class="co">#&gt;   imputed: 3 variable(s), 5 row(s) touched</span></span>
-<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.4</span></span></code></pre></div>
+<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.5</span></span></code></pre></div>
 </div>
 <p><code>vars</code> has no default. <code>PROC STANDARD</code> with no <code>VAR</code> statement processes every numeric column, and we chose not to inherit that: an imputation that picks its own variable list is the mistake the record exists to catch. Here <code>outcome</code> is numeric and is left alone because we did not name it.</p>
 <p>The completed data, and the matrix that says which cells in it were filled:</p>
@@ -243,7 +243,7 @@
 <span><span class="co">#&gt; 66.83333 28.13333 52.85714 </span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $version</span></span>
-<span><span class="co">#&gt; [1] "0.1.4"</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] "0.1.5"</span></span></code></pre></div>
 </div>
 </section><section class="level2"><h2 id="what-it-refuses">What it refuses<a class="anchor" aria-label="anchor" href="#what-it-refuses"></a>
 </h2>
@@ -258,9 +258,9 @@
 <span><span class="co">#&gt; [1] "`ef` is missing for every row, so it has no mean to impute from. Drop the variable or supply the fill value yourself; this function will not leave it as NA and call it imputed."</span></span></code></pre></div>
 </div>
 <p>The same goes for a non-numeric variable, a name that is not in the data, a column whose mean is not finite, a classed numeric such as <code>integer64</code> or <code>Date</code>, duplicated column names and a zero-row frame. Each is an error, not a warning. A refusal costs you a line of code; a wrong record costs you an audit nobody can pass, because nothing downstream can detect it.</p>
-</section><section class="level2"><h2 id="multiple-imputation-prototype">Multiple imputation (prototype)<a class="anchor" aria-label="anchor" href="#multiple-imputation-prototype"></a>
+</section><section class="level2"><h2 id="multiple-imputation">Multiple imputation<a class="anchor" aria-label="anchor" href="#multiple-imputation"></a>
 </h2>
-<p><code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> is the R form of <code>PROC MI</code>, which the <code>mult_imput</code> macro wraps. It draws <code>m</code> completed datasets with <code>mice</code> and returns the same shape of record. It is a prototype: designed and tested, not yet hardened or released, and it does <strong>not</strong> pool. Fitting a model to each draw and combining the results by Rubin’s rules is still your job.</p>
+<p><code><a href="../reference/impute_multiple.html">impute_multiple()</a></code> is the R form of <code>PROC MI</code>, which the <code>mult_imput</code> macro wraps. It draws <code>m</code> completed datasets with <code>mice</code> and returns the same shape of record. It is newer than <code><a href="../reference/impute_mean.html">impute_mean()</a></code>, and it does <strong>not</strong> pool. Fitting a model to each draw and combining the results by Rubin’s rules is still your job.</p>
 <p>It is a separate function from <code><a href="../reference/impute_mean.html">impute_mean()</a></code> on purpose. The two are different methods with different inferential properties, and there is no single <code>impute()</code> with a <code>method=</code> argument that could quietly run one when you expected the other.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb12"><pre class="downlit sourceCode r">
@@ -280,7 +280,7 @@
 <span><span class="co">#&gt;   rows:    7</span></span>
 <span><span class="co">#&gt;   imputed: 3 variable(s), 4 row(s) touched</span></span>
 <span><span class="co">#&gt;   informed by: outcome</span></span>
-<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.4</span></span></code></pre></div>
+<span><span class="co">#&gt;   produced by hvtiRimputation 0.1.5</span></span></code></pre></div>
 </div>
 <section class="level3"><h3 id="why-the-outcome-goes-in-predictors">Why the outcome goes in <code>predictors</code>
 <a class="anchor" aria-label="anchor" href="#why-the-outcome-goes-in-predictors"></a>
