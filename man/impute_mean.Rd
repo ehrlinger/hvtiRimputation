@@ -32,9 +32,9 @@ exactly which values were changed.
 This is the R form of \verb{PROC STANDARD ... REPLACE} with no \verb{MEAN=}/\verb{STD=},
 which is what the \code{imputsub} macro wraps. It is \strong{single} imputation: one
 completed dataset, and no between-imputation variance. Multiple imputation
-is not yet implemented; see the README. It will be a separate function,
-because a function that quietly does one method when the caller expected the
-other is a worse failure than no function at all.
+is \code{\link[=impute_multiple]{impute_multiple()}}, a separate function, because a function that
+quietly does one method when the caller expected the other is a worse
+failure than no function at all.
 
 \strong{An integer column comes back double.} The fill value is the mean, and
 a mean is rarely a whole number, so a filled integer column is widened to
@@ -82,6 +82,6 @@ imputed_matrix(out)
 }
 \seealso{
 \code{\link[=imputed_any]{imputed_any()}} and \code{\link[=complete_case_pass]{complete_case_pass()}} for the two row-level
-columns the attrition record consumes. Multiple imputation
-(\code{impute_multiple()}) is designed but not yet implemented; see the README.
+columns the attrition record consumes. \code{\link[=impute_multiple]{impute_multiple()}} for multiple
+imputation.
 }

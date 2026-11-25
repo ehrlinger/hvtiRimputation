@@ -40,8 +40,8 @@ the input) stays with you.
 
 This vignette is for the CORR biostatistician who already knows R and has
 used the SAS macros. It walks one small synthetic example from the fill to the
-attrition columns a CONSORT diagram wants, then shows the multiple-imputation
-prototype.
+attrition columns a CONSORT diagram wants, then shows multiple
+imputation.
 
 ## Installation
 

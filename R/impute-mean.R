@@ -7,9 +7,9 @@
 #' This is the R form of `PROC STANDARD ... REPLACE` with no `MEAN=`/`STD=`,
 #' which is what the `imputsub` macro wraps. It is **single** imputation: one
 #' completed dataset, and no between-imputation variance. Multiple imputation
-#' is not yet implemented; see the README. It will be a separate function,
-#' because a function that quietly does one method when the caller expected the
-#' other is a worse failure than no function at all.
+#' is [impute_multiple()], a separate function, because a function that
+#' quietly does one method when the caller expected the other is a worse
+#' failure than no function at all.
 #'
 #' @param data A data frame.
 #' @param vars Character vector of columns to impute. **Required, with no
@@ -67,8 +67,8 @@
 #' imputed_matrix(out)
 #'
 #' @seealso [imputed_any()] and [complete_case_pass()] for the two row-level
-#'   columns the attrition record consumes. Multiple imputation
-#'   (`impute_multiple()`) is designed but not yet implemented; see the README.
+#'   columns the attrition record consumes. [impute_multiple()] for multiple
+#'   imputation.
 #' @export
 impute_mean <- function(data, vars, cc_vars = names(data)) {
   data <- validate_data(data)
