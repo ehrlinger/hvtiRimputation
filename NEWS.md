@@ -1,3 +1,19 @@
+# hvtiRimputation 0.1.5
+
+A housekeeping release: no change to what any function computes.
+
+* Calling `impute_multiple()` without `predictors` still runs, with the
+  once-per-session deprecation warning. The 0.1.4 notes said it would be an
+  error in the next release. It is not one yet, and neither the help page
+  nor the warning names a release for it any more.
+
+* The maintainer address is `john.ehrlinger@gmail.com`, as in the rest of the
+  hvtiR family.
+
+* The package help, README, vignette and `Description` no longer call
+  `impute_multiple()` unbuilt or unreleased. It has shipped since 0.1.1; the
+  README's status line said v0.1.0 and its function table left it out.
+
 # hvtiRimputation 0.1.4
 
 * **`impute_multiple()` gains a required `predictors` argument.** Columns
