@@ -7,9 +7,10 @@
 #'
 #' **Two entry points, never one.** [impute_mean()] fills each missing value
 #' with its variable's mean and returns one completed dataset (`PROC STANDARD
-#' ... REPLACE`, which the `imputsub` macro wraps). `impute_multiple()` will
-#' generate `m` completed datasets for use with a pooling step
-#' (`PROC MI` / `mult_imput`); it is designed but not yet implemented.
+#' ... REPLACE`, which the `imputsub` macro wraps). [impute_multiple()]
+#' draws `m` completed datasets with `mice` (`PROC MI`, which the
+#' `mult_imput` macro wraps). It does not pool: combining the per-draw
+#' results by Rubin's rules is still the caller's job.
 #'
 #' There is deliberately no single `impute()` with a `method=` argument. 223
 #' studies in the corpus call single mean imputation, 326 call multiple
@@ -21,7 +22,7 @@
 #'
 #' **Nothing inherits a SAS default.** `PROC STANDARD` with no `VAR` statement
 #' processes every numeric column, and `impute_mean()` requires `vars`
-#' anyway; `impute_multiple()` will require `m`. The reason is that the corpus
+#' anyway; [impute_multiple()] requires `m`. The reason is that the corpus
 #' has no single answer to inherit. Five macro names exist in copies declaring
 #' different `NIMPUTE` defaults and three of them straddle 1, so a plurality
 #' default would silently convert a single-imputation call site into multiple

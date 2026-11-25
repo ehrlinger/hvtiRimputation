@@ -9,3 +9,4 @@ pkgdown-site/
 # Incoming handoff notes stay local; this repo is public.
 dev/*handoff*
 dev/**/*handoff*
+reports/
